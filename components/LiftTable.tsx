@@ -1,8 +1,8 @@
-import { Box, Collapse, Paper, Table, TableBody } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Paper } from '@mui/material';
 import { useState } from 'react';
 import StraightSet from './set-types/StraightSet';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+
 
 interface Props {
     lift: string,
@@ -10,25 +10,20 @@ interface Props {
     type?: string, //straight sets, myo 
 }
 export default function LiftTable(props: Props) {
-    const [open, setOpen] = useState(true)
+    const [expanded, setExpanded] = useState(true)
 
 
     return (
-        <Paper elevation={5} sx={{ my: 1, px: 1 }}>
-            <Box onClick={() => setOpen(!open)} p={2} display='flex' justifyContent='space-between'>
+        <Accordion expanded={expanded} sx={{ my: 1, px: 1 }}>
+            <AccordionSummary onClick={() => setExpanded(!expanded)} expandIcon={<ExpandMoreIcon />}>
                 {props.lift}
-                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </Box>
-            <Collapse in={open}>
+            </AccordionSummary>
+            <AccordionDetails>
                 <Box>
-                    <Table>
-                        <TableBody>
-                            <StraightSet />
-                            <StraightSet />
-                        </TableBody>
-                    </Table>
+                    <StraightSet />
+                    <StraightSet />
                 </Box>
-            </Collapse>
-        </Paper>
+            </AccordionDetails>
+        </Accordion>
     )
 }
