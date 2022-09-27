@@ -3,6 +3,7 @@ import { Dayjs } from 'dayjs';
 import { useState } from 'react';
 import Exercise from '../../models/Exercise';
 import ExerciseInput from './ExerciseInput';
+import ExerciseInputAccordion from './ExerciseInputAccordion';
 import LogEntryClock from './LogEntryClock';
 import LogEntryTitleBar from './LogEntryTitleBar';
 
@@ -35,7 +36,7 @@ export default function LogEntry(props: Props) {
             {exercises.map((exercise, i) => {
                 return (
                     <Grid item>
-                        <ExerciseInput exercise={exercise} startOpen={i === 0} key={i} />
+                        <ExerciseInputAccordion exercise={exercise} startOpen={i === 0} key={i} />
                     </Grid>
                 )
             })}
