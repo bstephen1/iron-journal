@@ -62,8 +62,6 @@ export default function CueInput(props: Props) {
             >
                 <ClearIcon />
             </IconButton>
-
         </Paper>
-
     )
 }
