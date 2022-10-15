@@ -1,6 +1,6 @@
 import { CheckBoxOutlineBlank } from '@mui/icons-material';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { Autocomplete, Button, Checkbox, Divider, List, MenuItem, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, Checkbox, Divider, MenuItem, OutlinedInput, Stack, TextField } from '@mui/material';
 import Grid from '@mui/system/Unstable_Grid';
 import { useState } from 'react';
 import EditableListItem from '../../components/EditableListItem';
@@ -172,7 +172,8 @@ export default function ManageExercisesPage() {
                         <Button onClick={() => setEditCuesList(!editCuesList)}>{editCuesList ? 'Done' : 'Edit'}</Button>
                         <Button onClick={() => setDirtyExercise({ ...dirtyExercise, cues: dirtyExercise.cues.concat('cue') })}>Add</Button>
                     </Stack>
-                    <List>
+                    <OutlinedInput fullWidth sx={{ my: 1 }} />
+                    <Stack spacing={2}>
                         {dirtyExercise?.cues.map((cue, i) => (
                             <EditableListItem
                                 index={i}
@@ -180,7 +181,7 @@ export default function ManageExercisesPage() {
                                 editToggle={editCuesList}
                                 handleDelete={handleDeleteCue}
                             />))}
-                    </List>
+                    </Stack>
                 </Grid>
             </Grid>
             <Grid xs={12}>

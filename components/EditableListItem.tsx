@@ -1,6 +1,5 @@
-import CircleIcon from '@mui/icons-material/Circle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Input, InputAdornment, ListItem, Stack, Typography } from '@mui/material';
+import { Box, Chip, Input, InputAdornment, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 
@@ -30,40 +29,32 @@ export default function EditableListItem(props: Props) {
     //todo: cursor position at end of input on mount, or where mouse is clicking
     //todo: input is shrinking width compared with text only
     return (
-        <ListItem key={index}>
-            <Stack direction='row'>
-                <CircleIcon sx={{ height: 7, pt: 1 }} />
-                {edit
-                    ?
-                    <>
-                        {/* <Box width={24} /> */}
-                        <Input
-                            autoFocus={!editToggle || props.value === ''}
-                            // disableUnderline
-                            // onFocus={(e) => e.target.select()} //select all text on init
-                            value={value}
-                            multiline
-                            fullWidth
-                            onChange={(e) => setValue(e.target.value)}
-                            // onBlur={() => !editToggle && setEdit(false)}
-                            sx={{ p: 0 }}
-                            onKeyDown={e => e.key === 'Enter' && e.preventDefault()} //allow multiline but without arbitrary new lines
-                            endAdornment={
-                                <InputAdornment position='end'>
-                                    <DeleteIcon onClick={() => handleDelete(index)} sx={{ cursor: 'pointer' }} />
-                                </InputAdornment>}
-                        />
-                    </>
-                    : <>
-                        <Typography
-                            sx={{ flex: '1 1 auto', display: 'flex' }}
-                            onClick={() => setEdit(true)}
-                        >
-                            {value}
-                        </Typography>
-                    </>
-                }
-            </Stack>
-        </ListItem >
+        <Box key={index}>
+            {edit
+                ?
+                <>
+                    {/* <Box width={24} /> */}
+                    <Input
+                        autoFocus={!editToggle || props.value === ''}
+                        // disableUnderline
+                        // onFocus={(e) => e.target.select()} //select all text on init
+                        value={value}
+                        multiline
+                        fullWidth
+                        onChange={(e) => setValue(e.target.value)}
+                        // onBlur={() => !editToggle && setEdit(false)}
+                        sx={{ p: 0 }}
+                        onKeyDown={e => e.key === 'Enter' && e.preventDefault()} //allow multiline but without arbitrary new lines
+                        endAdornment={
+                            <InputAdornment position='end'>
+                                <DeleteIcon onClick={() => handleDelete(index)} sx={{ cursor: 'pointer' }} />
+                            </InputAdornment>}
+                    />
+                </>
+                //eh, I think this is stretching the purpose of what Chips are for. Doesn't look too great with so much text
+                : <Chip sx={{ height: '100%' }} label={<Typography sx={{ whiteSpace: 'normal' }}>{value}</Typography>} onClick={() => setEdit(true)} />
+
+            }
+        </Box >
     )
 }

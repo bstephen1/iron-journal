@@ -39,7 +39,8 @@ let modifiers = [
 
 let exercises = [
     addExercise('squats', 'active', 'Milk and squats.', ['knees out', 'chest up'], ['belt', 'band']),
-    addExercise('curls', 'active', 'curl curl curl', ['a', 'b', 'c', 'd', 'f', 'e'], ['bodyweight', 'unilateral']),
+    addExercise('bench', 'active', '', [`"punch the sky" (keep wrists straight)`, 'squeeze pinkies', 'lats at the bottom', 'squeeze bench with thights (keeps butt down)', 'bulldog grip (rotate wrists so bar rests on palms and doesn\'t bend wrists back -- HUGE difference'], ['belt', 'pause']),
+    addExercise('curls', 'active', 'curl curl curl', [], ['bodyweight', 'unilateral']),
     addExercise('zercher squat', 'archived', 'never again', ['pain'], ['AMRAP']),
 ]
 
