@@ -16,8 +16,11 @@ import {
   IconButton,
   Stack,
   Tooltip,
+  useTheme,
 } from '@mui/material'
 import Grid from '@mui/system/Unstable_Grid'
+import { useRef, useEffect } from 'react'
+import { useMeasure } from 'react-use'
 import { useSwiper, useSwiperSlide } from 'swiper/react'
 import {
   updateRecordFields,
@@ -49,10 +52,13 @@ export default function RecordInput({
   const swiper = useSwiper()
   // this hook needs to be called for useSwiper() to update the activeIndex, but is otherwise unused
   const _ = useSwiperSlide()
+  // this may be making browser resizing laggy.
+  const [ref, { width }] = useMeasure()
+  const REF_SM = 400
   const { record, isError, mutate: mutateRecord } = useRecord(id)
   const { exercises, mutate: mutateExercises } = useExercises({
     status: ExerciseStatus.ACTIVE,
-  }) // SWR caches this, so it won't need to call the API every render
+  })
 
   if (isError) {
     console.error('Could not fetch record!')
@@ -132,7 +138,7 @@ export default function RecordInput({
   // todo: use carousel? https://github.com/Learus/react-material-ui-carousel
   // todo: add Category to Record so it persists (if exercise is filtered; mainly for programming)
   return (
-    <Card elevation={10} sx={{ px: 1 }}>
+    <Card elevation={10} sx={{ px: 1 }} ref={ref}>
       <CardHeader
         title={`Record ${index + 1}`}
         titleTypographyProps={{ variant: 'h6' }}
@@ -183,7 +189,7 @@ export default function RecordInput({
         sx={{ cursor: 'default' }}
       >
         <Grid container spacing={2}>
-          <Grid xs={12} sm={6}>
+          <Grid xs={width < REF_SM ? 12 : 6}>
             <ExerciseSelector
               variant="standard"
               {...{
@@ -194,7 +200,7 @@ export default function RecordInput({
               }}
             />
           </Grid>
-          <Grid xs={12} sm={6}>
+          <Grid xs={width < REF_SM ? 12 : 6}>
             <SelectFieldAutosave
               label="Set Type"
               initialValue={type}
