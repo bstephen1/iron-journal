@@ -22,12 +22,13 @@ class Exercise {
   }
 }
 
-function addModifier(name, status, canDelete) {
-  return { name, status, canDelete }
+function addModifier(name, status, weight) {
+  weight = weight ?? 0
+  return { name, status, weight, _id: randomUUID() }
 }
 
-function addName(name) {
-  return { name }
+function addCategory(name) {
+  return { name, _id: randomUUID() }
 }
 
 function addNote(value = '', tags = []) {
@@ -62,34 +63,34 @@ function addSessions(date, records, _id) {
 }
 
 let categories = [
-  addName('quads'),
-  addName('squat'),
-  addName('side delts'),
-  addName('biceps'),
-  addName('hamstrings'),
-  addName('bench press'),
-  addName('chest'),
-  addName('triceps'),
-  addName('cardio'),
-  addName('strongman'),
+  addCategory('quads'),
+  addCategory('squat'),
+  addCategory('side delts'),
+  addCategory('biceps'),
+  addCategory('hamstrings'),
+  addCategory('bench press'),
+  addCategory('chest'),
+  addCategory('triceps'),
+  addCategory('cardio'),
+  addCategory('strongman'),
 ]
 
 let modifiers = [
-  addModifier('belt', 'active', true),
-  addModifier('band', 'archived', true),
-  addModifier('pause', 'active', true),
-  addModifier('flared', 'active', true),
-  addModifier('tucked', 'active', true),
-  addModifier('wide', 'active', true),
-  addModifier('narrow', 'active', true),
-  addModifier('wraps', 'active', true),
-  addModifier('middle', 'active', true),
-  addModifier('barbell', 'active', true),
-  addModifier('unilateral left', 'active', true),
-  addModifier('unilateral right', 'active', true),
-  addModifier('AMRAP', 'active', true),
-  addModifier('myo', 'active', true),
-  addModifier('bodyweight', 'active', false),
+  addModifier('belt', 'active'),
+  addModifier('band', 'archived'),
+  addModifier('pause', 'active'),
+  addModifier('flared', 'active'),
+  addModifier('tucked', 'active'),
+  addModifier('wide', 'active'),
+  addModifier('narrow', 'active'),
+  addModifier('wraps', 'active'),
+  addModifier('middle', 'active'),
+  addModifier('barbell', 'active'),
+  addModifier('unilateral left', 'active'),
+  addModifier('unilateral right', 'active'),
+  addModifier('AMRAP', 'active'),
+  addModifier('myo', 'active'),
+  addModifier('bodyweight', 'active'),
   // todo: rep goal / marathon
 ]
 
@@ -98,35 +99,43 @@ let exercises = [
     'high bar squats',
     'active',
     [addNote('knees up'), addNote('chest up')],
-    ['squat'],
-    ['belt', 'band']
+    [categories[1]],
+    [modifiers[0], modifiers[1]]
   ),
   new Exercise(
     'curls',
     'active',
-    [addNote('twist in', ['barbell'])],
-    ['biceps'],
-    ['bodyweight', 'unilateral', 'barbell']
+    [addNote('twist in', [modifiers[9]])],
+    [categories[3]],
+    [modifiers[9], modifiers[12], modifiers[13]]
   ),
   new Exercise(
     'multi grip bench press',
     'active',
     [
-      addNote('great triceps', ['tucked', 'middle']),
-      addNote('great chest', ['flared', 'narrow']),
+      addNote('great triceps', [modifiers[4], modifiers[8]]),
+      addNote('great chest', [modifiers[3], modifiers[6]]),
     ],
-    ['bench press', 'chest', 'triceps'],
-    ['flared', 'tucked', 'wide', 'narrow', 'middle', 'belt', 'wraps']
+    [categories[5], categories[6], categories[7]],
+    [
+      modifiers[0],
+      modifiers[2],
+      modifiers[3],
+      modifiers[4],
+      modifiers[5],
+      modifiers[6],
+      modifiers[7],
+    ]
   ),
   new Exercise(
     'zercher squat',
     'archived',
     [addNote('pain')],
-    ['squat'],
-    ['AMRAP']
+    [categories[1]],
+    [modifiers[13]]
   ),
-  new Exercise('running', 'active', [], ['cardio'], []),
-  new Exercise('yoke', 'active', [], ['strongman'], []),
+  new Exercise('running', 'active', [], [categories[8]], []),
+  new Exercise('yoke', 'active', [], [categories[9]], []),
 ]
 
 let sets1 = [addSet(100, 5, 8), addSet(110, 5, 9), addSet(120, 5, 10)]
@@ -151,16 +160,16 @@ let records = [
   addRecord(
     '2022-09-26',
     { ...exercises[0] },
-    ['belt'],
+    [modifiers[0]],
     sets1,
     ['weight', 'reps', 'effort'],
-    [addNote('good session')],
+    [],
     randomUUID()
   ),
   addRecord(
     '2022-09-26',
     { ...exercises[1] },
-    ['bodyweight'],
+    [modifiers[13]],
     sets2,
     ['weight', 'reps'],
     [],

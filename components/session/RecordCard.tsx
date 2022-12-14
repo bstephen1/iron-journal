@@ -239,8 +239,9 @@ export default function RecordCard({
               options={exercise?.modifiers}
               initialValue={activeModifiers}
               variant="standard"
-              handleSubmit={(value: string[]) =>
-                handleFieldChange({ activeModifiers: value })
+              handleSubmit={(activeModifiers) =>
+                // @ts-ignore ComboBoxField drops the generic typing
+                handleFieldChange({ activeModifiers })
               }
             />
           </Grid>

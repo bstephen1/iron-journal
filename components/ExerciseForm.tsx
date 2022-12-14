@@ -40,6 +40,8 @@ export default function ExerciseForm({ exercise, handleUpdate }: Props) {
   )
 
   // todo: validate (drop empty notes)
+  console.log('exercise')
+  console.log(exercise)
 
   // This method requires using anonymous functions rather than arrow functions (using "function" keyword)
   // because arrow functions preserve the context of "this", but Yup needs the nested "this" from addMethod.
@@ -93,7 +95,7 @@ export default function ExerciseForm({ exercise, handleUpdate }: Props) {
         <ComboBoxField
           label="Categories"
           initialValue={exercise.categories}
-          options={categoryNames}
+          options={categories}
           textFieldProps={{ helperText: ' ' }}
           handleSubmit={(categories) => handleUpdate({ categories })}
         />
@@ -102,8 +104,9 @@ export default function ExerciseForm({ exercise, handleUpdate }: Props) {
         <ComboBoxField
           label="Modifiers"
           initialValue={exercise.modifiers}
-          options={modifierNames}
+          options={modifiers}
           textFieldProps={{ helperText: ' ' }}
+          // @ts-ignore ComboBoxField drops the generic typing
           handleSubmit={(modifiers) => handleUpdate({ modifiers })}
         />
       </Grid>
@@ -111,6 +114,8 @@ export default function ExerciseForm({ exercise, handleUpdate }: Props) {
         <NotesList
           label="Notes"
           notes={exercise.notes}
+          // todo: can the tags point to exercise.modifiers instead of storing the whole modifier? Same with activeModifiers?
+          // Store an array of the ids and lookup via exercise.modifiers? Then on lookup if not present it can remove itself...
           options={exercise.modifiers}
           handleSubmit={(notes) => handleUpdate({ notes })}
           multiple

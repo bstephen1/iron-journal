@@ -46,7 +46,9 @@ function withExercise(Component: typeof SelectorBase<Exercise>) {
       return (
         !categoryFilter ||
         exercise.name === inputValue || // if you filter out an exercise you can still type it in manually
-        exercise.categories.some((category) => category === categoryFilter.name)
+        exercise.categories.some(
+          (category) => category.name === categoryFilter.name
+        )
       )
     }
 

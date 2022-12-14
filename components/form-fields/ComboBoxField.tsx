@@ -7,27 +7,29 @@ import {
   TextField,
   TextFieldProps,
 } from '@mui/material'
+import { useEffect } from 'react'
+import { NamedObject } from '../../models/NamedObject'
 import useField from './useField'
 import withAsync from './withAsync'
 
 export const ComboBoxField = withAsync(ComboBoxFieldBase)
 
-interface ComboBoxFieldProps
-  extends Partial<AutocompleteProps<string, true, false, false>> {
-  options?: string[]
-  initialValue: string[]
-  handleSubmit: (value: string[]) => void
+interface ComboBoxFieldProps<T extends NamedObject>
+  extends Partial<AutocompleteProps<T, true, false, false>> {
+  options?: T[]
+  initialValue: T[]
+  handleSubmit: (value: T[]) => void
   textFieldProps?: Partial<TextFieldProps>
 }
 // todo: doesn't send to db if clicking X on chips
-function ComboBoxFieldBase({
+function ComboBoxFieldBase<T extends NamedObject>({
   options = [],
   initialValue,
   handleSubmit,
   textFieldProps,
   ...autocompleteProps
-}: ComboBoxFieldProps) {
-  const { control, value, setValue, isDirty } = useField<string[]>({
+}: ComboBoxFieldProps<T>) {
+  const { control, value, setValue, isDirty } = useField<T[]>({
     handleSubmit,
     initialValue,
   })
@@ -35,6 +37,17 @@ function ComboBoxFieldBase({
   const handleClose = () => {
     isDirty && handleSubmit(value)
   }
+
+  // useEffect(() => {
+  //   console.log(options);
+  // }, [options]);
+
+  useEffect(() => {
+    console.log(value)
+  }, [value])
+
+  console.log('hi')
+  console.log(initialValue)
 
   // This needs to be controlled due to complex behavior between the inner input and Chips.
   // May have to modify it if debounceSubmit is desired, but that may not be necessary for this.
@@ -45,6 +58,8 @@ function ComboBoxFieldBase({
       // useless renderInput to satisfy ts. Overwritten by autocompleteProps
       renderInput={(params) => <TextField {...params} />}
       onChange={(_, value) => setValue(value)}
+      getOptionLabel={(option) => option.name}
+      isOptionEqualToValue={(a, b) => a.name === b.name}
       fullWidth
       // size="small"  // todo: use small sizes?
       multiple
@@ -55,7 +70,7 @@ function ComboBoxFieldBase({
       options={options ?? []}
       disableCloseOnSelect
       autoHighlight
-      renderOption={(props, modifierName, { selected }) => (
+      renderOption={(props, option, { selected }) => (
         <li {...props}>
           <Checkbox
             icon={<CheckBoxOutlineBlank />}
@@ -63,7 +78,7 @@ function ComboBoxFieldBase({
             style={{ marginRight: 8 }}
             checked={selected}
           />
-          {modifierName}
+          {option.name}
         </li>
       )}
       {...autocompleteProps}

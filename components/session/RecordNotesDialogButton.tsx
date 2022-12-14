@@ -1,6 +1,7 @@
 import { Notes } from '@mui/icons-material'
 import { Badge, Dialog, DialogContent, DialogTitle } from '@mui/material'
 import { ComponentProps, useState } from 'react'
+import { NamedObject } from '../../models/NamedObject'
 import Note from '../../models/Note'
 import NotesList from '../form-fields/NotesList'
 import RecordHeaderButton from './RecordHeaderButton'
@@ -20,11 +21,12 @@ export default function RecordNotesDialogButton({
   const [open, setOpen] = useState(false)
 
   // Session tagged notes should propagate to all records in the session? Would need an id for notes
-  const options = ['Session', 'Record']
+  const record = new NamedObject('Record')
+  const options = [new NamedObject('Session'), record]
 
   // the rare full for loop
   for (let i = 1; i <= setsAmount; i++) {
-    options.push(`Set ${i}`)
+    options.push(new NamedObject(`Set ${i}`))
   }
 
   return (
@@ -42,7 +44,7 @@ export default function RecordNotesDialogButton({
         <DialogTitle>Notes</DialogTitle>
         <DialogContent>
           <NotesList
-            initialTags={['Record']}
+            initialTags={[record]}
             {...{ options, handleSubmit, notes }}
           />
         </DialogContent>

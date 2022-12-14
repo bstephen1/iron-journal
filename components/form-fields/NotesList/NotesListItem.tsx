@@ -1,6 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear'
 import { OutlinedInput } from '@mui/material'
 import { useRef } from 'react'
+import { NamedObject } from '../../../models/NamedObject'
 import Note from '../../../models/Note'
 import TransitionIconButton from '../../TransitionIconButton'
 import useField from '../useField'
@@ -12,7 +13,7 @@ interface Props {
   handleDelete: (index: number) => void
   handleUpdate: (index: number, value: Note) => void
   placeholder?: string
-  options: string[]
+  options: NamedObject[]
   multiple?: boolean
 }
 export default function NotesListItem(props: Props) {

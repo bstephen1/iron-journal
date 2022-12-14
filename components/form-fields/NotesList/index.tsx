@@ -1,14 +1,15 @@
 import { Divider, Stack } from '@mui/material'
+import { NamedObject } from '../../../models/NamedObject'
 import Note from '../../../models/Note'
 import AddNote from './AddNote'
 import NotesListItem from './NotesListItem'
 
 interface Props {
   label?: string
-  options: string[]
+  options: NamedObject[]
   addItemPlaceholder?: string
   listItemPlaceholder?: string
-  initialTags?: string[]
+  initialTags?: NamedObject[]
   handleSubmit: (notes: Note[]) => void
   notes: Note[]
   multiple?: boolean

@@ -62,8 +62,21 @@ export async function addRecord(record: Record) {
 
 // todo: pagination
 export async function fetchRecords(filter?: Filter<Record>) {
-  // find() returns a cursor, so it has to be converted to an array
-  return await records.find({ ...filter }).toArray()
+  return await records
+    .aggregate([
+      { $match: filter },
+      {
+        $lookup: {
+          from: 'exercises',
+          localField: 'exercise._id',
+          foreignField: '_id',
+          as: 'exercise',
+        },
+      },
+      // if preserveNull is false the whole record becomes null if exercise is null
+      { $unwind: { path: '$exercise', preserveNullAndEmptyArrays: true } },
+    ])
+    .toArray()
 }
 
 // todo: update record if exercise has been modified since last fetch
@@ -81,6 +94,7 @@ export async function fetchRecord(id: Record['_id']) {
       },
       // if preserveNull is false the whole record becomes null if exercise is null
       { $unwind: { path: '$exercise', preserveNullAndEmptyArrays: true } },
+      //  todo: lookup category?
     ])
     // return just the first (there's only the one)
     .next()
@@ -114,11 +128,45 @@ export async function addExercise(exercise: Exercise) {
 }
 
 export async function fetchExercises(filter?: Filter<Exercise>) {
-  return await exercises.find({ ...filter }).toArray()
+  return await exercises
+    .aggregate([
+      { $match: filter },
+      // this is wrong. Local field as array needs to be a string, not object
+      {
+        $lookup: {
+          from: 'modifiers',
+          localField: 'modifiers',
+          foreignField: '_id',
+          as: 'modifiers',
+        },
+      },
+    ])
+    .toArray()
 }
 
 export async function fetchExercise(id: string) {
-  return await exercises.findOne({ _id: id })
+  return await exercises
+    .aggregate([
+      { $match: { _id: id } },
+      {
+        $lookup: {
+          from: 'modifiers',
+          localField: 'modifiers',
+          foreignField: '_id',
+          as: 'modifiers',
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categories',
+          foreignField: '_id',
+          as: 'categories',
+        },
+      },
+      // don't need to unwind $lookup when localField is an array
+    ])
+    .next()
 }
 
 export async function updateExercise(exercise: Exercise) {
@@ -152,18 +200,22 @@ export async function fetchModifier(name: string) {
 }
 
 export async function updateModifier(modifier: Modifier) {
-  // upsert creates a new record if it couldn't find one to update
   return await modifiers.replaceOne({ _id: modifier._id }, modifier, {
     upsert: true,
   })
 }
 
-export async function updateModifierFields({
-  id,
-  updates,
-}: updateFieldsProps<Modifier>) {
-  return await modifiers.updateOne({ _id: id }, { $set: updates })
-}
+// not needed? Since only 2 fields... just update whole thing?
+// export async function updateModifierFields({
+//   id,
+//   updates,
+// }: updateFieldsProps<Modifier>) {
+//   if (!!updates.name) {
+//     // need to look up old name....
+//     // await exercises.updateMany({ modifiers: updates.name }, { $set: { "modifiers.$[element]": updates.name } }, { arrayFilters: [{ element: updates.name }] })
+//   }
+//   return await modifiers.updateOne({ _id: id }, { $set: updates })
+// }
 
 //----------
 // CATEGORY
@@ -187,12 +239,12 @@ export async function updateCategory(category: Category) {
   })
 }
 
-export async function updateCategoryFields({
-  id,
-  updates,
-}: updateFieldsProps<Category>) {
-  return await categories.updateOne({ _id: id }, { $set: updates })
-}
+// export async function updateCategoryFields({
+//   id,
+//   updates,
+// }: updateFieldsProps<Category>) {
+//   return await categories.updateOne({ _id: id }, { $set: updates })
+// }
 
 //------------
 // BODYWEIGHT

@@ -2,6 +2,7 @@ import CheckIcon from '@mui/icons-material/Check'
 import ClearIcon from '@mui/icons-material/Clear'
 import { OutlinedInput } from '@mui/material'
 import { useRef, useState } from 'react'
+import { NamedObject } from '../../../models/NamedObject'
 import Note from '../../../models/Note'
 import TransitionIconButton from '../../TransitionIconButton'
 import useField from '../useField'
@@ -11,9 +12,9 @@ interface Props {
   placeholder?: string
   handleAdd: (value: Note) => void
   disabled: boolean
-  options: string[]
+  options: NamedObject[]
   multiple?: boolean
-  initialTags?: string[]
+  initialTags?: NamedObject[]
 }
 // This Input is a temporary value that isn't include in the list until/unless it is submitted.
 export default function AddNote({

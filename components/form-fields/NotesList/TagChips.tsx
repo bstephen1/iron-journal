@@ -6,9 +6,10 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material'
+import { NamedObject } from '../../../models/NamedObject'
 
 interface Props {
-  selected: string | string[]
+  selected: NamedObject | NamedObject[]
   multiple?: boolean
 }
 export default function TagChips({ selected, multiple }: Props) {
@@ -17,12 +18,13 @@ export default function TagChips({ selected, multiple }: Props) {
   const displayedTagsAmount = useMediaQuery(theme.breakpoints.up('sm')) ? 2 : 1
 
   const tagPluralOrSingle = multiple ? 'tags' : 'tag'
-  selected = typeof selected === 'string' ? [selected] : selected
+  selected = Array.isArray(selected) ? selected : [selected]
 
   const StyledChip = (props: ChipProps) => (
     <Chip {...props} sx={{ cursor: 'inherit', ...props.sx }} />
   )
 
+  console.log(selected)
   return (
     <Tooltip title={'add ' + tagPluralOrSingle}>
       <Box
@@ -33,19 +35,18 @@ export default function TagChips({ selected, multiple }: Props) {
         }}
       >
         {
-          selected?.length ? (
-            selected
-              .slice(0, displayedTagsAmount + 1)
-              .map((value, i) =>
-                i < displayedTagsAmount ? (
-                  <StyledChip key={value} label={value} />
-                ) : (
-                  <StyledChip
-                    key={value}
-                    label={`+${selected.length - displayedTagsAmount}...`}
-                  />
-                )
+          selected.length ? (
+            selected.slice(0, displayedTagsAmount + 1).map((value, i) =>
+              i < displayedTagsAmount ? (
+                <StyledChip key={value._id} label={value.name} />
+              ) : (
+                <StyledChip
+                  key={value.name}
+                  // @ts-ignoreNext typescript being dumb
+                  label={`+${selected.length - displayedTagsAmount}...`}
+                />
               )
+            )
           ) : (
             <StyledChip
               label={'no ' + tagPluralOrSingle}

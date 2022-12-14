@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid'
 
-export abstract class NamedObject {
+// todo: rename to NamedEntity
+export class NamedObject {
   constructor(public name: string, public readonly _id: string = uuid()) {}
 }
 

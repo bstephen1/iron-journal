@@ -9,7 +9,6 @@ export default class Modifier extends NamedObject {
     public name: string,
     public status = ModifierStatus.ACTIVE,
     public weight = 0,
-    public canDelete = true,
     public readonly _id = generateId()
   ) {
     super(name, _id)

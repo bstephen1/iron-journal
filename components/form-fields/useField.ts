@@ -63,6 +63,7 @@ export default function useField<T = string>({
   }
 
   const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // todo: if non-string this must be overriden
     setValue(e.target.value as T) // todo: tell ts this is for strings only
     validate(e.target.value as T)
 

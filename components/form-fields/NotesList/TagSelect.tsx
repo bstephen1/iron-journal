@@ -9,13 +9,14 @@ import {
   SelectProps,
 } from '@mui/material'
 import { useState } from 'react'
+import { NamedObject } from '../../../models/NamedObject'
 import TagChips from './TagChips'
 
-interface Props extends Partial<SelectProps<string | string[]>> {
-  options: string[]
-  tags: string[] // single mode uses a singleton array
+interface Props extends Partial<SelectProps<NamedObject | NamedObject[]>> {
+  options: NamedObject[]
+  tags: NamedObject[] // single mode uses a singleton array
   multiple?: boolean
-  handleUpdate: (tags: string[]) => void
+  handleUpdate: (tags: NamedObject[]) => void
 }
 // this should be used as a start adornment in an input to render tags for that input
 export default function TagSelect({
@@ -27,8 +28,13 @@ export default function TagSelect({
 }: Props) {
   const [open, setOpen] = useState(false)
 
-  const handleChange = (value: string | string[]) =>
-    handleUpdate(typeof value === 'string' ? [value] : value)
+  // single mode changes values to strings
+  const handleChange = (value: NamedObject | NamedObject[] | string) => {
+    if (typeof value === 'string') {
+      value = options.find((option) => option.name === value) || []
+    }
+    handleUpdate(Array.isArray(value) ? value : [value])
+  }
 
   return (
     <Select
@@ -49,7 +55,9 @@ export default function TagSelect({
     >
       {options.map((option) => {
         return (
-          <MenuItem key={option} value={option}>
+          // value "should" be a number, but arbitrary values work fine if MenuItem is a direct child of Select
+          // see https://github.com/mui/material-ui/issues/14286
+          <MenuItem key={option._id} value={option as any}>
             {multiple && (
               <Checkbox
                 icon={<CheckBoxOutlineBlank />}
@@ -58,7 +66,7 @@ export default function TagSelect({
                 checked={tags.some((x) => x === option)} // todo: add a "selected" boolean map?
               />
             )}
-            <ListItemText primary={option} />
+            <ListItemText primary={option.name} />
           </MenuItem>
         )
       })}
