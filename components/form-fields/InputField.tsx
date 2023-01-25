@@ -1,6 +1,6 @@
 import { Check, Replay } from '@mui/icons-material'
 import { TextField, TextFieldProps, Tooltip } from '@mui/material'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { reach } from 'yup'
 import TransitionIconButton from '../TransitionIconButton'
 import useField from './useField'
@@ -9,6 +9,11 @@ interface Props {
   label: string
   initialValue?: string
   defaultHelperText?: string
+  /** whether the input should allow changing to the same value.
+   *
+   * e.g. a weigh-in that is the same as the previous weight.
+   */
+  canSubmitSameValue?: boolean
   handleSubmit: (value: string) => void
   yupValidator: ReturnType<typeof reach>
 }
@@ -17,13 +22,15 @@ export default function InputField(props: Props & TextFieldProps) {
     label,
     initialValue = '',
     defaultHelperText = ' ',
+    canSubmitSameValue = false,
     handleSubmit,
     yupValidator,
     ...textFieldProps
   } = props
 
   const inputRef = useRef<HTMLInputElement>()
-  const { control, reset, submit, isDirty, error } = useField<string>({
+  const sameValueSubmitVisible = useRef(false)
+  const { control, reset, submit, isDirty, error, value } = useField<string>({
     yupValidator,
     handleSubmit,
     initialValue,
@@ -34,6 +41,18 @@ export default function InputField(props: Props & TextFieldProps) {
     reset(initialValue)
     inputRef.current?.focus()
   }
+
+  useEffect(() => {
+    if (
+      canSubmitSameValue &&
+      !!value &&
+      document.activeElement === inputRef.current
+    ) {
+      sameValueSubmitVisible.current = true
+    } else if (sameValueSubmitVisible) {
+      sameValueSubmitVisible.current = false
+    }
+  }, [canSubmitSameValue, value])
 
   return (
     <TextField
@@ -54,7 +73,7 @@ export default function InputField(props: Props & TextFieldProps) {
         endAdornment: (
           <>
             <TransitionIconButton
-              isVisible={isDirty}
+              isVisible={isDirty || sameValueSubmitVisible.current}
               disabled={!!error}
               onClick={submit}
             >

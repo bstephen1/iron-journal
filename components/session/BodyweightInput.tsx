@@ -65,6 +65,7 @@ export default function BodyweightInput({
       {...textFieldProps}
       type="number"
       label="Bodyweight"
+      canSubmitSameValue
       // disable scroll wheel changing the number
       onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()}
       initialValue={!data?.length ? '' : String(data[0].value)}
