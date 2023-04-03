@@ -10,6 +10,7 @@ export default function MyAutocomplete() {
     setIsFirstRender(false)
   }, [])
   return (
+    // the stack spacing causes a bit of jumping for the first option, but there's no jumping if it's omitted
     <Stack spacing={2}>
       {/* autocomplete's initial render has value of null and flashes the placeholder */}
 
@@ -38,10 +39,11 @@ export default function MyAutocomplete() {
       <TextField
         label="label"
         placeholder="shouldn't see this"
-        // InputLabelProps={{ shrink: true }}
+        InputLabelProps={{ shrink: true }}
         value={value}
         fullWidth
         InputProps={{
+          // maybe remove this
           endAdornment: <CircularProgress color="inherit" size={20} />,
         }}
         sx={{ display: isFirstRender ? 'block' : 'none' }}
@@ -86,9 +88,15 @@ export default function MyAutocomplete() {
             value={value}
           />
         )}
-        // value={value}
+        // multiple
+        value={value}
         options={[value]}
       />
+
+      {/* discovery: ComboBoxField does not render null on the first render. 
+      It also uses autocomplete, but uses the field hook.  */}
+      {/* Oh, I see. It's because the input field is actually empty since it's multiple.
+       The multiple are rendered as chips as a start adornment. */}
     </Stack>
   )
 }
