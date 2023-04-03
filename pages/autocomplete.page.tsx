@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 
 export default function MyAutocomplete() {
   const [value, setValue] = useState('hello world')
+  const [inputValue, setInputValue] = useState(value)
 
   const [isFirstRender, setIsFirstRender] = useState(true)
 
@@ -97,6 +98,44 @@ export default function MyAutocomplete() {
       It also uses autocomplete, but uses the field hook.  */}
       {/* Oh, I see. It's because the input field is actually empty since it's multiple.
        The multiple are rendered as chips as a start adornment. */}
+
+      <Autocomplete
+        // breakthrough! The problem is that the autocomplete calls onInputChange with 'reset' on initial render!
+        // inputValue / onInputChange make the input controlled. By doing this, you can see that on mount the
+        // autocomplete calls onInputChange with a null event and reason 'reset'. By ignoring this the input remains
+        // populated, as it should, without flashing null! The real question is... why is this the default behavior
+        // and why is it not talked about more online??
+        // See:
+        // https://github.com/mui/material-ui/issues/19423#issuecomment-639659875
+        // https://stackoverflow.com/a/65679069
+        // https://github.com/mui/material-ui/issues/20939
+        inputValue={inputValue}
+        onInputChange={(e, v, reason) => {
+          console.log(v)
+          console.log(reason)
+          // input is reset whenever selecting something from the dropdown menu,
+          // but in this case e will not be null
+          if (reason === 'reset' && e === null) {
+            return
+          }
+          setInputValue(v)
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="label"
+            placeholder="shouldn't see this"
+            InputProps={{
+              ...params.InputProps,
+              value,
+            }}
+          />
+        )}
+        // multiple
+        value={value}
+        onChange={(_, v) => setValue(v ?? '')}
+        options={[value]}
+      />
     </Stack>
   )
 }
