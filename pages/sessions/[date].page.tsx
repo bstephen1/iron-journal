@@ -1,32 +1,10 @@
 import SessionView from 'components/session/SessionView'
-import { getUserId } from 'lib/backend/apiMiddleware/util'
 import { valiDate } from 'lib/backend/apiQueryValidationService'
-import { fetchRecords, fetchSession } from 'lib/backend/mongoService'
-import { arrayToIndex, Index } from 'lib/util'
+import { Index } from 'lib/util'
 import Record from 'models/Record'
 import SessionLog from 'models/SessionLog'
-import { GetServerSidePropsContext } from 'next'
+import { NextPage } from 'next'
 import Head from 'next/head'
-
-export async function getServerSideProps({
-  req,
-  res,
-  query,
-}: GetServerSidePropsContext) {
-  console.log(req)
-  const userId = await getUserId(req, res)
-  const date = valiDate(query.date)
-
-  const sessionLogPromise = fetchSession(userId, date)
-  const recordsPromise = fetchRecords({ userId, filter: { date } })
-
-  return Promise.all([sessionLogPromise, recordsPromise]).then(
-    ([sessionLog, recordsArray]) => {
-      const records = arrayToIndex<Record>('_id', recordsArray)
-      return { props: { sessionLog, records, date } }
-    }
-  )
-}
 
 interface Props {
   sessionLog: SessionLog | null
@@ -35,7 +13,7 @@ interface Props {
 }
 // todo: I guess a separate session number in case you want to do multiple sessions in one day
 // or, add separate sessions to the same day?
-export default function SessionPage(props: Props) {
+const SessionPage: NextPage<Props> = (props: Props) => {
   return (
     <>
       <Head>
@@ -48,3 +26,33 @@ export default function SessionPage(props: Props) {
     </>
   )
 }
+
+SessionPage.getInitialProps = async ({ req, res, query }): Promise<Props> => {
+  const date = valiDate(query.date)
+
+  // // req and res are only set on the server
+  // const isServer = !!req
+
+  // // https://stackoverflow.com/questions/67434329/next-js-cant-connect-to-mongodb-database-using-getinitialprops
+  // https://blog.logrocket.com/getinitialprops-vs-getserversideprops-nextjs/
+  // if (!isServer) {
+  //   // can't import userid when called client side (or server?)
+  //   const userId = await getUserId(req, res)
+
+  //   const sessionLogPromise = fetchSession(userId, date)
+  //   const recordsPromise = fetchRecords({ userId, filter: { date } })
+
+  //   return Promise.all([sessionLogPromise, recordsPromise]).then(
+  //     ([sessionLog, recordsArray]) => {
+  //       const records = arrayToIndex<Record>('_id', recordsArray)
+  //       return { sessionLog, records, date }
+  //     }
+  //   )
+  // }
+
+  // const sessionLog = useSessionLog(date)
+
+  return { sessionLog: null, records: {}, date }
+}
+
+export default SessionPage
