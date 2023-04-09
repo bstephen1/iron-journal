@@ -1,10 +1,7 @@
 import Record from 'models/Record'
 import { useBodyweightHistory, useModifiers } from './restService'
 
-interface Props {
-  record?: Record | null
-}
-export default function useExtraWeight({ record }: Props) {
+export default function useExtraWeight(record?: Record | null) {
   const { modifiersIndex } = useModifiers()
   const { data: bodyweightData } = useBodyweightHistory({
     limit: 2,
