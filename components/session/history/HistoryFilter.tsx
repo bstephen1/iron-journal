@@ -1,36 +1,52 @@
-import { Card, CardContent, CardHeader, Checkbox, Stack } from '@mui/material'
+import {
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  Checkbox,
+  Stack,
+  Typography
+} from '@mui/material'
 import { ComboBoxField } from 'components/form-fields/ComboBoxField'
 import NumericFieldAutosave from 'components/form-fields/NumericFieldAutosave'
+import ExerciseSelector from 'components/form-fields/selectors/ExerciseSelector'
 import StyledDivider from 'components/StyledDivider'
-import { useRecord } from 'lib/frontend/restService'
+import dayjs from 'dayjs'
+import { DATE_FORMAT } from 'lib/frontend/constants'
+import { useExercises } from 'lib/frontend/restService'
 import useDisplayFields from 'lib/frontend/useDisplayFields'
+import Exercise from 'models/Exercise'
+import Record from 'models/Record'
 import { useEffect, useState } from 'react'
-import { useSwiperSlide } from 'swiper/react'
+import SessionDatePicker from '../upper/SessionDatePicker'
 import HistoryCardsSwiper from './HistoryCardsSwiper'
 
 interface Props {
-  id: string
+  /** A Record can be provided to pull data from */
+  record?: Record | null
 }
-export default function HistoryFilter({ id }: Props) {
-  const { record } = useRecord(id)
-  const [modifierFilter, setModifierFilter] = useState<string[]>([])
+export default function HistoryFilter({ record }: Props) {
   const [repFilter, setRepFilter] = useState<number>()
-  const [repsChecked, setRepsChecked] = useState(false)
-  const [modifiersChecked, setModifiersChecked] = useState(false)
-  const displayFields = useDisplayFields({ record })
-  const { isVisible } = useSwiperSlide()
-  const [hasBeenVisible, setHasBeenVisible] = useState(false)
+  const [shouldFilterReps, setShouldFilterReps] = useState(false)
+  const [modifierFilter, setModifierFilter] = useState<string[]>([])
+  const [shouldFilterModifiers, setShouldFilterModifiers] = useState(false)
+  const displayFields = useDisplayFields(record)
+  const { exercises, mutate: mutateExercises } = useExercises()
+  const [exercise, setExercise] = useState<Exercise | null>(
+    record?.exercise || null
+  )
+  const [shouldAutoUpdate, setShouldAutoUpdate] = useState(true)
+  const [date, setDate] = useState(dayjs(record?.date))
 
   useEffect(() => {
-    isVisible && setHasBeenVisible(true)
-  }, [isVisible])
+    if (!record || !shouldAutoUpdate) return
 
-  useEffect(() => {
-    if (!record) return
+    setExercise(record.exercise)
+    setDate(dayjs(record.date))
 
     // only filter if there is a value.
     // todo: can't filter on no modifiers. Api gets "modifier=&" which is just dropped.
-    setModifiersChecked(!!record.activeModifiers.length)
+    setShouldFilterModifiers(!!record.activeModifiers.length)
     setModifierFilter(record.activeModifiers)
 
     // todo: amrap/myo need to be special default modifiers rather than hardcoding here
@@ -39,15 +55,13 @@ export default function HistoryFilter({ id }: Props) {
       !record.activeModifiers.includes('amrap') &&
       !record.activeModifiers.includes('myo')
     ) {
-      setRepsChecked(true)
+      setShouldFilterReps(true)
       setRepFilter(record.sets[0].reps)
     } else {
-      setRepsChecked(false)
+      setShouldFilterReps(false)
       setRepFilter(undefined)
     }
-  }, [record])
-
-  if (!record || !displayFields) return <></>
+  }, [record, shouldAutoUpdate])
 
   // todo: may want to merge this into the RecordCard
   return (
@@ -61,60 +75,70 @@ export default function HistoryFilter({ id }: Props) {
 
         <CardContent sx={{ px: 1 }}>
           <Stack spacing={2}>
+            <SessionDatePicker
+              date={date}
+              handleDateChange={setDate}
+              textFieldProps={{ variant: 'standard' }}
+            />
+            <ExerciseSelector
+              variant="standard"
+              {...{
+                exercise,
+                exercises,
+                handleChange: setExercise,
+                mutate: mutateExercises,
+              }}
+            />
             <Stack direction="row">
               <Checkbox
-                checked={modifiersChecked}
-                onChange={(e) => setModifiersChecked(e.target.checked)}
+                checked={shouldFilterModifiers}
+                onChange={(e) => setShouldFilterModifiers(e.target.checked)}
                 sx={{ width: '55px', height: '55px' }}
               />
               <ComboBoxField
                 label="Filter Modifiers"
-                options={record.exercise?.modifiers}
-                initialValue={record.activeModifiers}
+                options={exercise?.modifiers}
+                initialValue={record?.activeModifiers || []}
                 variant="standard"
                 handleSubmit={setModifierFilter}
               />
             </Stack>
             <Stack direction="row">
               <Checkbox
-                checked={repsChecked}
-                onChange={(e) => setRepsChecked(e.target.checked)}
+                checked={shouldFilterReps}
+                onChange={(e) => setShouldFilterReps(e.target.checked)}
                 sx={{ width: '55px', height: '55px' }}
               />
               <NumericFieldAutosave
                 label="Filter reps"
-                initialValue={record.sets[0]?.reps}
+                initialValue={record?.sets[0]?.reps}
                 handleSubmit={setRepFilter}
                 variant="standard"
               />
             </Stack>
-            {/* Only render the swiper if the parent record card is currently visible.
-                This prevents a large initial spike trying to load the history for
-                every record in the session at once.
-                It also doesn't hinder desktop experience, where multiple slides may be
-                visible at once but the added load is not likely to degrade performance.
-              */}
-            {hasBeenVisible && (
-              <HistoryCardsSwiper
-                recordId={record._id}
-                currentDate={record.date}
-                displayFields={displayFields}
-                filter={{
-                  exercise: record.exercise?.name,
-                  reps: repsChecked ? repFilter : undefined,
-                  modifier: modifiersChecked ? modifierFilter : undefined,
-                  // todo: try to find a better way of limiting this so you can go back
-                  // further if you want. Maybe a dedicated history page?
-                  // The history swipers start to cause significant lag on mobile if they
-                  // get too large so the limit has to be fairly aggressive.
-                  limit: 5,
-                  end: record.date,
-                }}
+            <Stack direction="row">
+              <Checkbox
+                checked={shouldAutoUpdate}
+                onChange={(e) => setShouldAutoUpdate(e.target.checked)}
+                sx={{ width: '55px', height: '55px' }}
               />
-            )}
+              <Typography display="flex" alignItems="center">
+                Auto update filters
+              </Typography>
+            </Stack>
           </Stack>
         </CardContent>
+        <CardActions></CardActions>
       </Card>
+      <HistoryCardsSwiper
+        date={date.format(DATE_FORMAT)}
+        displayFields={displayFields}
+        filter={{
+          exercise: exercise?.name,
+          reps: shouldFilterReps ? repFilter : undefined,
+          modifier: shouldFilterModifiers ? modifierFilter : undefined,
+        }}
+      />
     </Stack>
   )
 }

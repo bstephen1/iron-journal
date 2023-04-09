@@ -19,7 +19,7 @@ interface Props {
 }
 export default function HistoryCard({ record, displayFields }: Props) {
   const router = useRouter()
-  const extraWeight = useExtraWeight({ record })
+  const extraWeight = useExtraWeight(record)
   // use splitWeight if parent record is using it, even if this history record doesn't have the
   // right modifiers for it to be active
   const showSplitWeight = displayFields.visibleFields.some((field) =>
@@ -27,7 +27,7 @@ export default function HistoryCard({ record, displayFields }: Props) {
   )
 
   return (
-    <Card elevation={0}>
+    <Card elevation={3} sx={{ px: 1, m: 0.5 }}>
       <CardHeader
         title={
           <Box
@@ -53,7 +53,7 @@ export default function HistoryCard({ record, displayFields }: Props) {
       />
       <StyledDivider elevation={0} sx={{ height: 2, my: 0 }} />
 
-      <CardContent sx={{ px: 0 }}>
+      <CardContent sx={{ px: 1 }}>
         <Stack spacing={2}>
           <ComboBoxField
             label="Modifiers"

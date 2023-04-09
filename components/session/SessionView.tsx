@@ -50,8 +50,10 @@ export default function SessionView({ date }: Props) {
   // be notified and mutate themselves to retrieve the new exercise data.
   const [mostRecentlyUpdatedExercise, setMostRecentlyUpdatedExercise] =
     useState<Exercise | null>(null)
+  const [activeRecord, setActiveRecord] = useState<Record | null>(null)
   const { sessionLog, mutate, isLoading } = useSessionLog(date)
   const sessionHasRecords = !!sessionLog?.records.length
+  const paginationClassName = 'pagination-record-cards'
 
   const updateSwiper = (swiper: SwiperClass) => {
     setIsBeginning(swiper.isBeginning)
@@ -129,7 +131,7 @@ export default function SessionView({ date }: Props) {
       ) : (
         <Box>
           <Box
-            className="pagination-above"
+            className={paginationClassName}
             display="flex"
             justifyContent="center"
             pt={2}
@@ -187,6 +189,7 @@ export default function SessionView({ date }: Props) {
               }}
               spaceBetween={20}
               keyboard
+              autoHeight
               centeredSlides
               navigation={{
                 prevEl: '.nav-prev',
@@ -197,7 +200,7 @@ export default function SessionView({ date }: Props) {
               // need this for CSS to hide slides that are partially offscreen
               watchSlidesProgress
               pagination={{
-                el: '.pagination-above',
+                el: `.${paginationClassName}`,
                 clickable: true,
                 // todo: maybe add a custom render and make the last one a "+" or something.
                 // Kind of tricky to do though.
@@ -211,6 +214,7 @@ export default function SessionView({ date }: Props) {
                     date={dayjs(date)}
                     deleteRecord={handleDeleteRecord}
                     swapRecords={handleSwapRecords}
+                    setActiveRecord={setActiveRecord}
                     swiperIndex={i}
                     updateSessionNotes={handleNotesChange}
                     sessionNotes={sessionLog.notes}
@@ -219,9 +223,6 @@ export default function SessionView({ date }: Props) {
                     }
                     mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
                   />
-                  <Box py={3}>
-                    <HistoryFilter id={id} key={id} />
-                  </Box>
                 </SwiperSlide>
               ))}
 
@@ -251,6 +252,9 @@ export default function SessionView({ date }: Props) {
               </IconButton>
             </Box>
           </Stack>
+          <Box py={3}>
+            <HistoryFilter record={activeRecord} />
+          </Box>
         </Box>
       )}
     </Stack>
