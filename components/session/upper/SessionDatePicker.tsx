@@ -7,7 +7,7 @@ import {
 import { Dayjs } from 'dayjs'
 import { DATE_FORMAT } from 'lib/frontend/constants'
 import { useSessionLogs } from 'lib/frontend/restService'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Props {
   date: Dayjs
@@ -46,6 +46,10 @@ export default function SessionDatePicker({
   const { sessionLogsIndex, isLoading } = useSessionLogs(
     buildSessionLogQuery(0)
   )
+
+  useEffect(() => {
+    setPickerValue(date)
+  }, [date])
 
   const handleChange = (newPickerValue: Dayjs | null) => {
     if (newPickerValue?.isValid()) {
