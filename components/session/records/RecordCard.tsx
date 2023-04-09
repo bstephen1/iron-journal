@@ -63,6 +63,7 @@ interface Props {
   deleteRecord: (id: string) => Promise<void>
   swapRecords: (i: number, j: number) => Promise<void>
   setMostRecentlyUpdatedExercise: (exercise: Exercise) => void
+  setActiveRecord: (record: Record | null) => void
   /** This allows records within a session that are using the same exercise to see updates to notes/displayFields */
   mostRecentlyUpdatedExercise: Exercise | null
   updateSessionNotes: (notes: Note[]) => Promise<void>
@@ -75,6 +76,7 @@ export default function RecordCard({
   swapRecords,
   swiperIndex,
   setMostRecentlyUpdatedExercise,
+  setActiveRecord,
   mostRecentlyUpdatedExercise,
   updateSessionNotes,
   sessionNotes = [],
@@ -90,13 +92,18 @@ export default function RecordCard({
   const { exercises, mutate: mutateExercises } = useExercises({
     status: Status.active,
   })
-  const displayFields = useDisplayFields({ record })
-  const extraWeight = useExtraWeight({ record })
+  const displayFields = useDisplayFields(record)
+  const extraWeight = useExtraWeight(record)
   const router = useRouter()
   const [titleRef, { width: titleWidth }] = useMeasure()
   const [moreButtonsAnchorEl, setMoreButtonsAnchorEl] =
     useState<null | HTMLElement>(null)
   const shouldCondense = useMemo(() => titleWidth < 360, [titleWidth])
+  const { isActive } = useSwiperSlide()
+
+  useEffect(() => {
+    isActive && setActiveRecord(record ?? null)
+  }, [isActive])
 
   useEffect(() => {
     if (!record || mostRecentlyUpdatedExercise?._id !== record?.exercise?._id) {
