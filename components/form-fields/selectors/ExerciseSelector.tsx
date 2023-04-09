@@ -13,8 +13,9 @@ interface ExerciseSelectorProps {
   exercises: Exercise[] | undefined
   mutate: KeyedMutator<Exercise[]>
   variant?: TextFieldProps['variant']
-  handleCategoryChange: (category: string | null) => void
-  category: string | null
+  /** If this is omitted the category filter will not be rendered */
+  handleCategoryChange?: (category: string | null) => void
+  category?: string | null
 }
 export default function ExerciseSelector({
   exercise,
@@ -67,16 +68,18 @@ export default function ExerciseSelector({
       // inputRef={inputRef}
       // todo: anchor to the bottom of the input?
       startAdornment={
-        <CategoryFilter
-          // standard variant bizzarely removes left input padding. Easier to add it back to Category filter
-          sx={{ pr: asyncSelectorProps.variant === 'standard' ? 1 : 0 }}
-          {...{
-            categories: categoryNames,
-            category,
-            setCategory: handleCategoryChange,
-            handleOpenChange: setFilterOpen,
-          }}
-        />
+        handleCategoryChange && (
+          <CategoryFilter
+            // standard variant bizzarely removes left input padding. Easier to add it back to Category filter
+            sx={{ pr: asyncSelectorProps.variant === 'standard' ? 1 : 0 }}
+            {...{
+              categories: categoryNames,
+              category,
+              setCategory: handleCategoryChange,
+              handleOpenChange: setFilterOpen,
+            }}
+          />
+        )
       }
     />
   )
