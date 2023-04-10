@@ -2,28 +2,47 @@ import NotesIcon from '@mui/icons-material/Notes'
 import { Box, Card, CardContent, CardHeader, Stack } from '@mui/material'
 import { ComboBoxField } from 'components/form-fields/ComboBoxField'
 import StyledDivider from 'components/StyledDivider'
+import useDisplayFields from 'lib/frontend/useDisplayFields'
 import useExtraWeight from 'lib/frontend/useExtraWeight'
 import { DisplayFields } from 'models/DisplayFields'
 import Record from 'models/Record'
 import { useRouter } from 'next/router'
+import { useMemo } from 'react'
 import RecordNotesDialogButton from '../records/RecordNotesDialogButton'
 import SetHeader from '../records/SetHeader'
 import SetInput from '../records/SetInput'
 
 interface Props {
   record: Record
-  /** Must use the displayFields of the parent record.
+  /** Active modifiers of the parent record. Will only display the history record's modifiers if they are different. */
+  activeModifiers: string[]
+  /** DisplayFields of the parent record.
    * The history record's displayFields will be stale if the parent's fields change.
    */
-  displayFields: DisplayFields
+  displayFields?: DisplayFields
 }
-export default function HistoryCard({ record, displayFields }: Props) {
+export default function HistoryCard({
+  record,
+  activeModifiers,
+  ...props
+}: Props) {
   const router = useRouter()
   const extraWeight = useExtraWeight(record)
+  const recordDisplayFields = useDisplayFields(record) as DisplayFields
+  const displayFields = props.displayFields
+    ? props.displayFields
+    : recordDisplayFields
   // use splitWeight if parent record is using it, even if this history record doesn't have the
   // right modifiers for it to be active
   const showSplitWeight = displayFields.visibleFields.some((field) =>
     ['plateWeight', 'totalWeight'].includes(field.name)
+  )
+  const showModifiers = useMemo(
+    () =>
+      record.activeModifiers.some(
+        (modifier) => !activeModifiers.includes(modifier)
+      ),
+    [record.activeModifiers, activeModifiers]
   )
 
   return (
@@ -55,13 +74,15 @@ export default function HistoryCard({ record, displayFields }: Props) {
 
       <CardContent sx={{ px: 1 }}>
         <Stack spacing={2}>
-          <ComboBoxField
-            label="Modifiers"
-            options={record.activeModifiers}
-            initialValue={record.activeModifiers}
-            variant="standard"
-            readOnly
-          />
+          {showModifiers && (
+            <ComboBoxField
+              label="Modifiers"
+              options={record.activeModifiers}
+              initialValue={record.activeModifiers}
+              variant="standard"
+              readOnly
+            />
+          )}
           <SetHeader readOnly {...{ displayFields, showSplitWeight }} />
         </Stack>
         <Box sx={{ pb: 0 }}>

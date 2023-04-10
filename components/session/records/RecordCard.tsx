@@ -86,7 +86,7 @@ export default function RecordCard({
   const _ = useSwiperSlide()
   const theme = useTheme()
   const noSwipingAboveSm = useMediaQuery(theme.breakpoints.up('sm'))
-    ? 'swiper-no-swiping-outer'
+    ? 'swiper-no-swiping-record'
     : ''
   const { record, mutate: mutateRecord, isLoading } = useRecord(id)
   const { exercises, mutate: mutateExercises } = useExercises({
@@ -102,8 +102,8 @@ export default function RecordCard({
   const { isActive } = useSwiperSlide()
 
   useEffect(() => {
-    isActive && setActiveRecord(record ?? null)
-  }, [isActive])
+    isActive && record !== undefined && setActiveRecord(record)
+  }, [isActive, setActiveRecord, record])
 
   useEffect(() => {
     if (!record || mostRecentlyUpdatedExercise?._id !== record?.exercise?._id) {

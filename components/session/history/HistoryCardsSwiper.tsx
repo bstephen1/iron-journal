@@ -1,4 +1,4 @@
-import { Box, Paper, Stack, Typography } from '@mui/material'
+import { Box, IconButton, Stack, Typography } from '@mui/material'
 import { useRecords } from 'lib/frontend/restService'
 import { RecordQuery } from 'models/query-filters/RecordQuery'
 import {
@@ -14,66 +14,62 @@ import HistoryCard from './HistoryCard'
 import 'swiper/css'
 import 'swiper/css/bundle'
 
-import LoadingSpinner from 'components/loading/LoadingSpinner'
-import { DEFAULT_DISPLAY_FIELDS, DisplayFields } from 'models/DisplayFields'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIos'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import RecordCardSkeleton from 'components/loading/RecordCardSkeleton'
+import { DisplayFields } from 'models/DisplayFields'
 import { ArrayMatchType } from 'models/query-filters/MongoQuery'
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import 'swiper/css/pagination'
 
 interface Props {
+  /** Override the display fields for the fetched records. Can be useful if display fields may update
+   *  after the records are fetched. A record's displayFields are only up to date on fetch.
+   */
   displayFields?: DisplayFields
-  date: string
+  /** inclusive */
+  endDate: string
   filter: RecordQuery
+  activeModifiers: string[]
 }
 export default function HistoryCardsSwiper({
-  date,
-  displayFields = DEFAULT_DISPLAY_FIELDS,
+  endDate,
+  displayFields,
   filter,
+  activeModifiers,
 }: Props) {
-  const [swiper, setSwiper] = useState<SwiperClass | null>(null)
   // todo: limit this to something like 10 records before/after the date, then fetch more if the swiper gets close to either end.
   const { records, isLoading } = useRecords({
     ...filter,
     modifierMatchType: ArrayMatchType.Equivalent,
     sort: 'oldestFirst',
+    end: endDate,
   })
   // each record's history needs a unique className
   const paginationClassName = `pagination-history`
-  const mostRecentDateIndex = useMemo(
-    () =>
-      records ? records.findIndex((record) => record.date === date) - 1 : 0,
-    [records, date]
-  )
+  const [isBeginning, setIsBeginning] = useState(false)
+  const [isEnd, setIsEnd] = useState(false)
 
-  // When the records get updated (ie, filters change) we need to slide to the new most recent slide.
-  // Can't use swiper's initialSlide because the swiper doesn't get always get rerendered when records change.
-  useEffect(() => {
-    // guard against just initialized/destroyed swiper
-    if (typeof swiper?.activeIndex === 'number') {
-      // This behavior might not be great UX in practice. It's a bit tricky though. If you swap around the filters
-      // you may expect to stay on the same date if it still exists on the new filter. But the filter is usually
-      // something you'd set up initially, before browsing. And in that case the filter can be too restricted initially
-      // and end up not showing the most recent record when you do set it up.
-      swiper.slideTo(mostRecentDateIndex)
-    }
-  }, [mostRecentDateIndex, swiper])
-
-  if (isLoading || !records) {
-    return (
-      <Paper elevation={3} sx={{ px: 1, m: 0.5 }}>
-        <LoadingSpinner />
-      </Paper>
-    )
+  const updateSwiper = (swiper: SwiperClass) => {
+    setIsBeginning(swiper.isBeginning)
+    setIsEnd(swiper.isEnd)
   }
 
-  // length will be 1 at minimum because the current record will always be fetched
-  if (records && records.length < 2) {
+  if (isLoading || !records) {
+    return <RecordCardSkeleton title="History" readOnly />
+  }
+
+  if (!records.length) {
     return (
-      <Paper elevation={3} sx={{ px: 1, py: 4, m: 0.5 }}>
-        <Typography textAlign="center">
-          No records with those filters!
-        </Typography>
-      </Paper>
+      <RecordCardSkeleton
+        title="History"
+        readOnly
+        Content={
+          <Typography textAlign="center">
+            No history found for this exercise!
+          </Typography>
+        }
+      />
     )
   }
 
@@ -97,17 +93,31 @@ export default function HistoryCardsSwiper({
         />
       </Box>
       {/* this box prevents Swiper from deciding it needs to have infinite width for some reason. Width is required when stack has alignItems centered */}
-      <Box width="100%">
+      <Stack direction="row" sx={{ width: '100%' }}>
+        <Box display="flex" width="auto" alignItems="center">
+          <IconButton
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+            className="nav-prev-history"
+            color="primary"
+            disabled={isBeginning}
+          >
+            <ArrowBackIosNewIcon />
+          </IconButton>
+        </Box>
         <Swiper
+          onSwiper={updateSwiper}
+          onSlideChange={updateSwiper}
+          onUpdate={updateSwiper}
           spaceBetween={20}
-          onSwiper={setSwiper}
-          noSwipingClass="swiper-no-swiping-inner"
-          className="swiper-no-swiping-outer"
           grabCursor
           // This isn't documented, but the out of bounds behavior sets the active slide to
           // the closest valid index (first slide starting at 0). This makes it pretty easy
           // to default to the most recent date.
           initialSlide={filter.limit}
+          navigation={{
+            prevEl: '.nav-prev-history',
+            nextEl: '.nav-next-history',
+          }}
           autoHeight
           // todo: initial slide based on date
           pagination={{
@@ -121,15 +131,23 @@ export default function HistoryCardsSwiper({
           modules={[Pagination, Navigation, Scrollbar, Controller]}
           style={{ padding: '11px 4px' }}
         >
-          {records
-            ?.filter((record) => record.date !== date)
-            .map((record) => (
-              <SwiperSlide key={record._id}>
-                <HistoryCard {...{ record, displayFields }} />
-              </SwiperSlide>
-            ))}
+          {records.map((record) => (
+            <SwiperSlide key={record._id}>
+              <HistoryCard {...{ record, displayFields, activeModifiers }} />
+            </SwiperSlide>
+          ))}
         </Swiper>
-      </Box>
+        <Box display="flex" width="auto" alignItems="center">
+          <IconButton
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+            className="nav-next-history"
+            color="primary"
+            disabled={isEnd}
+          >
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Box>
+      </Stack>
     </Stack>
   )
 }

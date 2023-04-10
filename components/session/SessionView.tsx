@@ -24,10 +24,10 @@ import {
 } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import AddRecordCard from './AddRecordCard'
-import HistoryFilter from './history/HistoryFilter'
 
 // Swiper needs all these css classes to be imported too
 import dayjs from 'dayjs'
+import { DATE_FORMAT } from 'lib/frontend/constants'
 import Note from 'models/Note'
 import 'swiper/css'
 import 'swiper/css/bundle'
@@ -35,6 +35,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 import CopySessionCard from './CopySessionCard'
+import HistoryCardsSwiper from './history/HistoryCardsSwiper'
 import SessionModules from './upper/SessionModules'
 import usePaginationSize from './usePaginationSize'
 
@@ -146,7 +147,7 @@ export default function SessionView({ date }: Props) {
             <Box display="flex" width="auto" alignItems="center">
               <IconButton
                 sx={{ display: { xs: 'none', sm: 'block' } }}
-                className="nav-prev"
+                className="nav-prev-record"
                 color="primary"
                 disabled={isBeginning}
               >
@@ -169,7 +170,7 @@ export default function SessionView({ date }: Props) {
               cssMode
               // update when number of slides changes
               onUpdate={updateSwiper}
-              noSwipingClass="swiper-no-swiping-outer"
+              noSwipingClass="swiper-no-swiping-record"
               modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
               // breakpoints catch everything >= the given value
               breakpoints={{
@@ -189,11 +190,12 @@ export default function SessionView({ date }: Props) {
               }}
               spaceBetween={20}
               keyboard
-              autoHeight
+              // todo: height needs to be updated on init and set change
+              // autoHeight
               centeredSlides
               navigation={{
-                prevEl: '.nav-prev',
-                nextEl: '.nav-next',
+                prevEl: '.nav-prev-record',
+                nextEl: '.nav-next-record',
               }}
               grabCursor
               watchOverflow
@@ -228,10 +230,13 @@ export default function SessionView({ date }: Props) {
 
               <SwiperSlide
                 // if no records, disable swiping. The swiping prevents you from being able to close date picker
-                className={sessionHasRecords ? '' : 'swiper-no-swiping-outer'}
+                className={sessionHasRecords ? '' : 'swiper-no-swiping-record'}
               >
                 <Stack spacing={2} sx={{ p: 0.5 }}>
-                  <AddRecordCard handleAdd={handleAddRecord} />
+                  <AddRecordCard
+                    handleAdd={handleAddRecord}
+                    setActiveRecord={setActiveRecord}
+                  />
                   {!sessionHasRecords && (
                     <CopySessionCard
                       date={dayjs(date)}
@@ -244,7 +249,7 @@ export default function SessionView({ date }: Props) {
             <Box display="flex" alignItems="center">
               <IconButton
                 sx={{ display: { xs: 'none', sm: 'block' } }}
-                className="nav-next"
+                className="nav-next-record"
                 color="primary"
                 disabled={isEnd}
               >
@@ -253,7 +258,30 @@ export default function SessionView({ date }: Props) {
             </Box>
           </Stack>
           <Box py={3}>
-            <HistoryFilter record={activeRecord} />
+            {/* 
+              The filter here should be extracted from the active record, and not customizable.
+              The intention is not to be a robust history search; it should be treated as an extension
+              of the active record. A separate history page can be developed for more robust history
+              searches (including graphs!)
+            */}
+            {activeRecord && (
+              <HistoryCardsSwiper
+                endDate={dayjs(date).add(-1, 'day').format(DATE_FORMAT)}
+                displayFields={activeRecord.exercise?.displayFields}
+                activeModifiers={activeRecord.activeModifiers}
+                // The history should be showing the user recent data for that specific exercise.
+                // It isn't showing what they did last session. That could be anything (even a different exercise!)
+                // But for an exercise, weight and reps may change. So the only thing we can filter on is the
+                // name and modifiers. Modifiers may change too if there are "don't-cares" (like straps / wraps) but should
+                // be mostly good enough. Reps are hard to deal with because it would need to distinguish eg sets of 6, 8-12, 10-20, amrap, failed reps, etc.
+                // So that would need to be an entirely separate field on the record card.
+                filter={{
+                  exercise: activeRecord.exercise?.name,
+                  modifier: activeRecord.activeModifiers,
+                  limit: 10,
+                }}
+              />
+            )}
           </Box>
         </Box>
       )}
