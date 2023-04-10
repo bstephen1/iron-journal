@@ -82,8 +82,6 @@ export default function RecordCard({
   sessionNotes = [],
 }: Props) {
   const swiper = useSwiper()
-  // this hook needs to be called for useSwiper() to update the activeIndex, but is otherwise unused
-  const _ = useSwiperSlide()
   const theme = useTheme()
   const noSwipingAboveSm = useMediaQuery(theme.breakpoints.up('sm'))
     ? 'swiper-no-swiping-record'
@@ -100,6 +98,11 @@ export default function RecordCard({
     useState<null | HTMLElement>(null)
   const shouldCondense = useMemo(() => titleWidth < 360, [titleWidth])
   const { isActive } = useSwiperSlide()
+
+  // Have to update swiper height if record card height changes (usually when adding/deleting sets)
+  useEffect(() => {
+    record && swiper.updateAutoHeight()
+  }, [record, swiper])
 
   useEffect(() => {
     isActive && record !== undefined && setActiveRecord(record)
@@ -130,6 +133,10 @@ export default function RecordCard({
     return <RecordCardSkeleton />
   } else if (!record) {
     return <>Could not find record</>
+  } else {
+    // Need to update autoheight when normal record is rendered.
+    // Doesn't work if in a useEffect -- probably checks the height too early.
+    swiper.updateAutoHeight()
   }
 
   const { exercise, activeModifiers, sets, notes, _id } = record
@@ -157,6 +164,7 @@ export default function RecordCard({
       optimisticData: { ...record, sets: sets.concat(newSet) },
       revalidate: false,
     })
+    // swiper.updateAutoHeight()
   }
 
   const handleFieldChange = async (changes: Partial<Record>) => {
@@ -209,6 +217,7 @@ export default function RecordCard({
       optimisticData: { ...record, sets: newSets },
       revalidate: false,
     })
+    // swiper.updateAutoHeight()
   }
 
   const handleDeleteRecord = async () => {

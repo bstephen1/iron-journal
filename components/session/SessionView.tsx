@@ -190,8 +190,8 @@ export default function SessionView({ date }: Props) {
               }}
               spaceBetween={20}
               keyboard
-              // todo: height needs to be updated on init and set change
-              // autoHeight
+              // without autoheight records will be cut off when adding sets
+              autoHeight
               centeredSlides
               navigation={{
                 prevEl: '.nav-prev-record',
