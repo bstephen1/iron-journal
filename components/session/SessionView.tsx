@@ -14,19 +14,12 @@ import TitleBar from './upper/TitleBar'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIos'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { useState } from 'react'
-import {
-  A11y,
-  Keyboard,
-  Navigation,
-  Pagination,
-  Scrollbar,
-  Swiper as SwiperClass,
-} from 'swiper'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import AddRecordCard from './AddRecordCard'
+import { Swiper as SwiperClass } from 'swiper'
 
 // Swiper needs all these css classes to be imported too
 import dayjs from 'dayjs'
+import 'keen-slider/keen-slider.min.css'
+import { useKeenSlider } from 'keen-slider/react'
 import { DATE_FORMAT } from 'lib/frontend/constants'
 import Note from 'models/Note'
 import 'swiper/css'
@@ -34,7 +27,6 @@ import 'swiper/css/bundle'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
-import CopySessionCard from './CopySessionCard'
 import HistoryCardsSwiper from './history/HistoryCardsSwiper'
 import SessionModules from './upper/SessionModules'
 import usePaginationSize from './usePaginationSize'
@@ -55,6 +47,11 @@ export default function SessionView({ date }: Props) {
   const { sessionLog, mutate, isLoading } = useSessionLog(date)
   const sessionHasRecords = !!sessionLog?.records.length
   const paginationClassName = 'pagination-record-cards'
+
+  const [sliderRef, instanceRef] = useKeenSlider({
+    // this seems to help the nested slider?
+    renderMode: 'performance',
+  })
 
   const updateSwiper = (swiper: SwiperClass) => {
     setIsBeginning(swiper.isBeginning)
@@ -154,53 +151,9 @@ export default function SessionView({ date }: Props) {
                 <ArrowBackIosNewIcon />
               </IconButton>
             </Box>
-            <Swiper
-              // for some reason passing the swiper object to state doesn't update it, so added in an intermediary function
-              onSwiper={updateSwiper}
-              onSlideChange={updateSwiper}
-              // update when number of slides changes
-              onUpdate={updateSwiper}
-              noSwipingClass="swiper-no-swiping-record"
-              modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
-              // breakpoints catch everything >= the given value
-              breakpoints={{
-                [theme.breakpoints.values.sm]: {
-                  slidesPerView: 1,
-                },
-                [theme.breakpoints.values.md]: {
-                  slidesPerView: 2,
-                  centeredSlides: false,
-                  centerInsufficientSlides: true,
-                },
-                [theme.breakpoints.values.lg]: {
-                  slidesPerView: 3,
-                  centeredSlides: true,
-                  centerInsufficientSlides: false,
-                },
-              }}
-              spaceBetween={20}
-              keyboard
-              // without autoheight records will be cut off when adding sets
-              autoHeight
-              centeredSlides
-              navigation={{
-                prevEl: '.nav-prev-record',
-                nextEl: '.nav-next-record',
-              }}
-              grabCursor
-              watchOverflow
-              // need this for CSS to hide slides that are partially offscreen
-              watchSlidesProgress
-              pagination={{
-                el: `.${paginationClassName}`,
-                clickable: true,
-                // todo: maybe add a custom render and make the last one a "+" or something.
-                // Kind of tricky to do though.
-              }}
-              style={{ padding: '11px 4px', flexGrow: '1' }}
-            >
+            <Box ref={sliderRef} className="keen-slider">
               {sessionLog?.records.map((id, i) => (
-                <SwiperSlide key={id}>
+                <Box className="keen-slider__slide" key={id}>
                   <RecordCard
                     id={id}
                     date={dayjs(date)}
@@ -215,12 +168,30 @@ export default function SessionView({ date }: Props) {
                     }
                     mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
                   />
-                </SwiperSlide>
+                  {activeRecord && (
+                    <Box className="data-keen-slider-clickable">
+                      <HistoryCardsSwiper
+                        endDate={dayjs(date).add(-1, 'day').format(DATE_FORMAT)}
+                        displayFields={activeRecord.exercise?.displayFields}
+                        activeModifiers={activeRecord.activeModifiers}
+                        // The history should be showing the user recent data for that specific exercise.
+                        // It isn't showing what they did last session. That could be anything (even a different exercise!)
+                        // But for an exercise, weight and reps may change. So the only thing we can filter on is the
+                        // name and modifiers. Modifiers may change too if there are "don't-cares" (like straps / wraps) but should
+                        // be mostly good enough. Reps are hard to deal with because it would need to distinguish eg sets of 6, 8-12, 10-20, amrap, failed reps, etc.
+                        // So that would need to be an entirely separate field on the record card.
+                        filter={{
+                          exercise: activeRecord.exercise?.name,
+                          modifier: activeRecord.activeModifiers,
+                          limit: 10,
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
               ))}
 
-              <SwiperSlide
-                // if no records, disable swiping. The swiping prevents you from being able to close date picker
-                className={sessionHasRecords ? '' : 'swiper-no-swiping-record'}
+              {/* <Box className="keen-slider__slide"
               >
                 <Stack spacing={2} sx={{ p: 0.5 }}>
                   <AddRecordCard
@@ -234,8 +205,8 @@ export default function SessionView({ date }: Props) {
                     />
                   )}
                 </Stack>
-              </SwiperSlide>
-            </Swiper>
+              </Box> */}
+            </Box>
             <Box display="flex" alignItems="center">
               <IconButton
                 sx={{ display: { xs: 'none', sm: 'block' } }}

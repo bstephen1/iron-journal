@@ -24,7 +24,8 @@ import { ComboBoxField } from 'components/form-fields/ComboBoxField'
 import ExerciseSelector from 'components/form-fields/selectors/ExerciseSelector'
 import RecordCardSkeleton from 'components/loading/RecordCardSkeleton'
 import StyledDivider from 'components/StyledDivider'
-import { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
+import { DATE_FORMAT } from 'lib/frontend/constants'
 import {
   updateExerciseFields,
   updateRecordFields,
@@ -41,7 +42,7 @@ import { Status } from 'models/Status'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { useMeasure } from 'react-use'
-import { useSwiper, useSwiperSlide } from 'swiper/react'
+import HistoryCardsSwiper from '../history/HistoryCardsSwiper'
 import RecordHeaderButton from './RecordHeaderButton'
 import RecordNotesDialogButton from './RecordNotesDialogButton'
 import RecordUnitsButton from './RecordUnitsButton'
@@ -81,7 +82,6 @@ export default function RecordCard({
   updateSessionNotes,
   sessionNotes = [],
 }: Props) {
-  const swiper = useSwiper()
   const theme = useTheme()
   const noSwipingAboveSm = useMediaQuery(theme.breakpoints.up('sm'))
     ? 'swiper-no-swiping-record'
@@ -97,12 +97,13 @@ export default function RecordCard({
   const [moreButtonsAnchorEl, setMoreButtonsAnchorEl] =
     useState<null | HTMLElement>(null)
   const shouldCondense = useMemo(() => titleWidth < 360, [titleWidth])
-  const { isActive } = useSwiperSlide()
+  const isActive = false
 
   // Have to update swiper height if record card height changes (usually when adding/deleting sets)
-  useEffect(() => {
-    record && swiper.updateAutoHeight()
-  }, [record, swiper])
+  // useEffect(() => {
+  //   record && swiper.updateAutoHeight()
+  // }, [record, swiper])
+  // const swiper: any = {}
 
   useEffect(() => {
     isActive && record !== undefined && setActiveRecord(record)
@@ -136,7 +137,7 @@ export default function RecordCard({
   } else {
     // Need to update autoheight when normal record is rendered.
     // Doesn't work if in a useEffect -- probably checks the height too early.
-    swiper.updateAutoHeight()
+    // swiper.updateAutoHeight()
   }
 
   const { exercise, activeModifiers, sets, notes, _id } = record
@@ -222,14 +223,14 @@ export default function RecordCard({
 
   const handleDeleteRecord = async () => {
     await deleteRecord(_id)
-    swiper.update() // have to update swiper whenever changing swiper elements
+    // swiper.update() // have to update swiper whenever changing swiper elements
   }
 
   const handleSwapRecords = async (i: number, j: number) => {
     await swapRecords(i, j)
-    swiper.update()
+    // swiper.update()
     // todo: think about animation here. Instant speed? Maybe if it could change to a fade transition?
-    swiper.slideTo(j, 0)
+    // swiper.slideTo(j, 0)
   }
 
   const handleExerciseChange = async (newExercise: Exercise | null) => {
@@ -268,7 +269,7 @@ export default function RecordCard({
     <RecordHeaderButton
       title="Move current record to the right"
       // disable on the penultimate slide because the last is the "add record" button
-      disabled={swiperIndex >= swiper.slides?.length - 2}
+      // disabled={swiperIndex >=  swiper.slides?.length - 2}
       onClick={() => handleSwapRecords(swiperIndex, swiperIndex + 1)}
     >
       <KeyboardDoubleArrowRightIcon />
@@ -439,6 +440,24 @@ export default function RecordCard({
           </span>
         </Tooltip>
       </CardActions>
+      <Box className="data-keen-slider-clickable">
+        <HistoryCardsSwiper
+          endDate={dayjs(record.date).add(-1, 'day').format(DATE_FORMAT)}
+          displayFields={record.exercise?.displayFields}
+          activeModifiers={record.activeModifiers}
+          // The history should be showing the user recent data for that specific exercise.
+          // It isn't showing what they did last session. That could be anything (even a different exercise!)
+          // But for an exercise, weight and reps may change. So the only thing we can filter on is the
+          // name and modifiers. Modifiers may change too if there are "don't-cares" (like straps / wraps) but should
+          // be mostly good enough. Reps are hard to deal with because it would need to distinguish eg sets of 6, 8-12, 10-20, amrap, failed reps, etc.
+          // So that would need to be an entirely separate field on the record card.
+          filter={{
+            exercise: record.exercise?.name,
+            modifier: record.activeModifiers,
+            limit: 10,
+          }}
+        />
+      </Box>
     </Card>
   )
 }

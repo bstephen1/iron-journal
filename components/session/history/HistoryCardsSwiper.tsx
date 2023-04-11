@@ -1,14 +1,6 @@
 import { Box, IconButton, Stack, Typography } from '@mui/material'
 import { useRecords } from 'lib/frontend/restService'
 import { RecordQuery } from 'models/query-filters/RecordQuery'
-import {
-  Controller,
-  Navigation,
-  Pagination,
-  Scrollbar,
-  Swiper as SwiperClass
-} from 'swiper'
-import { Swiper, SwiperSlide } from 'swiper/react'
 import HistoryCard from './HistoryCard'
 
 import 'swiper/css'
@@ -17,10 +9,20 @@ import 'swiper/css/bundle'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIos'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import RecordCardSkeleton from 'components/loading/RecordCardSkeleton'
+import { KeenSliderPlugin, useKeenSlider } from 'keen-slider/react'
 import { DisplayFields } from 'models/DisplayFields'
 import { ArrayMatchType } from 'models/query-filters/MongoQuery'
 import { useState } from 'react'
 import 'swiper/css/pagination'
+
+const AdaptiveHeight: KeenSliderPlugin = (slider) => {
+  function updateHeight() {
+    slider.container.style.height =
+      slider.slides[slider.track.details.rel].offsetHeight + 'px'
+  }
+  slider.on('created', updateHeight)
+  slider.on('slideChanged', updateHeight)
+}
 
 interface Props {
   /** Override the display fields for the fetched records. Can be useful if display fields may update
@@ -45,15 +47,34 @@ export default function HistoryCardsSwiper({
     sort: 'oldestFirst',
     end: endDate,
   })
-  // each record's history needs a unique className
-  const paginationClassName = `pagination-history`
-  const [isBeginning, setIsBeginning] = useState(false)
-  const [isEnd, setIsEnd] = useState(false)
+  const [isSliderLoading, setIsSliderLoading] = useState(true)
+  const [currentSlide, setCurrentSlide] = useState(0)
 
-  const updateSwiper = (swiper: SwiperClass) => {
-    setIsBeginning(swiper.isBeginning)
-    setIsEnd(swiper.isEnd)
-  }
+  const [sliderRef, instanceRef] = useKeenSlider(
+    {
+      slides: {
+        spacing: 20,
+      },
+      renderMode: 'performance',
+      // todo: set to last, but length is unknown. Maybe reverse mongo fetch and do rtl
+      // initial: -1,
+      // rubberband should be false in a nested slider
+      rubberband: false,
+      slideChanged(slider) {
+        setCurrentSlide(slider.track.details.rel)
+      },
+      created() {
+        setIsSliderLoading(false)
+      },
+    },
+    [AdaptiveHeight]
+  )
+
+  // useEffect(() => {
+  //   if (currentSlide >= 0 || !records) return
+
+  //   instanceRef.current?.moveToIdx(records.length)
+  // }, [records, currentSlide, instanceRef]);
 
   if (isLoading || !records) {
     return <RecordCardSkeleton title="History" readOnly />
@@ -73,76 +94,64 @@ export default function HistoryCardsSwiper({
     )
   }
 
+  /*
+        <Swiper
+          autoHeight
+        >
+
+
+
+  */
+
   return (
     <Stack alignItems="center">
-      {/* Dynamic pagination css is very finnicky and opaque. 
-          Finally got centered by wrapping them in this centered box to force them
-          to be centered. Also requires position relative for some reason. */}
       <Box>
-        <Box
-          // Setting pagination size overwrites the dynamic bullet size.
-          // Couldn't find a way to set the main and dynamic bullets separately.
-          // CSS classes are swiper-pagination-bullet-active-main and swiper-pagination-bullet-active-next
-          // Swiper css is in swiper/swiper-bundle.css, which has the class used to change pagination size,
-          // but there's no obvious equivalent for dynamic bullets.
-          className={paginationClassName}
-          display="flex"
-          justifyContent="center"
-          pt={2}
-        // position="relative"
-        />
+        <Box className="dots" display="flex" justifyContent="center" pt={2}>
+          {[
+            ...Array(instanceRef.current?.track.details.slides.length).keys(),
+          ].map((i) => {
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  instanceRef.current?.moveToIdx(i)
+                }}
+                className={'dot' + (currentSlide === i ? ' active' : '')}
+              ></button>
+            )
+          })}
+        </Box>
       </Box>
-      {/* this box prevents Swiper from deciding it needs to have infinite width for some reason. Width is required when stack has alignItems centered */}
+      {/* this box prevents the slider from having infinite width. Width is required when stack has alignItems centered */}
       <Stack direction="row" sx={{ width: '100%' }}>
         <Box display="flex" width="auto" alignItems="center">
           <IconButton
             sx={{ display: { xs: 'none', sm: 'block' } }}
             className="nav-prev-history"
             color="primary"
-            disabled={isBeginning}
+            disabled={currentSlide === 0}
+            onClick={instanceRef.current?.prev}
           >
             <ArrowBackIosNewIcon />
           </IconButton>
         </Box>
-        <Swiper
-          onSwiper={updateSwiper}
-          onSlideChange={updateSwiper}
-          onUpdate={updateSwiper}
-          spaceBetween={20}
-          grabCursor
-          // This isn't documented, but the out of bounds behavior sets the active slide to
-          // the closest valid index (first slide starting at 0). This makes it pretty easy
-          // to default to the most recent date.
-          initialSlide={filter.limit}
-          navigation={{
-            prevEl: '.nav-prev-history',
-            nextEl: '.nav-next-history',
-          }}
-          autoHeight
-          // todo: initial slide based on date
-          pagination={{
-            el: `.${paginationClassName}`,
-            clickable: true,
-            // dynamic bullets cause a total crash when navigating from SessionView to some other page, then back to SessionView.
-            // This appears to only occur in production.
-            // dynamicBullets: true,
-            // dynamicMainBullets: 5,
-          }}
-          modules={[Pagination, Navigation, Scrollbar, Controller]}
-          style={{ padding: '11px 4px' }}
-        >
+        <Box ref={sliderRef} className="keen-slider" sx={{ cursor: 'grab' }}>
           {records.map((record) => (
-            <SwiperSlide key={record._id}>
+            <Box className="keen-slider__slide" key={record._id}>
               <HistoryCard {...{ record, displayFields, activeModifiers }} />
-            </SwiperSlide>
+            </Box>
           ))}
-        </Swiper>
+        </Box>
         <Box display="flex" width="auto" alignItems="center">
           <IconButton
             sx={{ display: { xs: 'none', sm: 'block' } }}
             className="nav-next-history"
             color="primary"
-            disabled={isEnd}
+            disabled={
+              currentSlide ===
+              (instanceRef.current?.track.details.slides.length ?? 0) - 1
+            }
+            onClick={instanceRef.current?.next}
           >
             <ArrowForwardIosIcon />
           </IconButton>
