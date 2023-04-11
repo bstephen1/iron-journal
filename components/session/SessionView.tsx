@@ -16,6 +16,8 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { useState } from 'react'
 import { Swiper as SwiperClass } from 'swiper'
 
+import 'glider-js/glider.min.css'
+import Glider from 'react-glider'
 // Swiper needs all these css classes to be imported too
 import dayjs from 'dayjs'
 import 'keen-slider/keen-slider.min.css'
@@ -51,6 +53,7 @@ export default function SessionView({ date }: Props) {
   const [sliderRef, instanceRef] = useKeenSlider({
     // this seems to help the nested slider?
     renderMode: 'performance',
+    drag: false,
   })
 
   const updateSwiper = (swiper: SwiperClass) => {
@@ -151,9 +154,9 @@ export default function SessionView({ date }: Props) {
                 <ArrowBackIosNewIcon />
               </IconButton>
             </Box>
-            <Box ref={sliderRef} className="keen-slider">
+            <Glider draggable slidesToShow={1} scrollLock scrollLockDelay={0}>
               {sessionLog?.records.map((id, i) => (
-                <Box className="keen-slider__slide" key={id}>
+                <Box key={id}>
                   <RecordCard
                     id={id}
                     date={dayjs(date)}
@@ -169,24 +172,24 @@ export default function SessionView({ date }: Props) {
                     mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
                   />
                   {activeRecord && (
-                    <Box className="data-keen-slider-clickable">
-                      <HistoryCardsSwiper
-                        endDate={dayjs(date).add(-1, 'day').format(DATE_FORMAT)}
-                        displayFields={activeRecord.exercise?.displayFields}
-                        activeModifiers={activeRecord.activeModifiers}
-                        // The history should be showing the user recent data for that specific exercise.
-                        // It isn't showing what they did last session. That could be anything (even a different exercise!)
-                        // But for an exercise, weight and reps may change. So the only thing we can filter on is the
-                        // name and modifiers. Modifiers may change too if there are "don't-cares" (like straps / wraps) but should
-                        // be mostly good enough. Reps are hard to deal with because it would need to distinguish eg sets of 6, 8-12, 10-20, amrap, failed reps, etc.
-                        // So that would need to be an entirely separate field on the record card.
-                        filter={{
-                          exercise: activeRecord.exercise?.name,
-                          modifier: activeRecord.activeModifiers,
-                          limit: 10,
-                        }}
-                      />
-                    </Box>
+                    // <Box className="data-keen-slider-clickable">
+                    <HistoryCardsSwiper
+                      endDate={dayjs(date).add(-1, 'day').format(DATE_FORMAT)}
+                      displayFields={activeRecord.exercise?.displayFields}
+                      activeModifiers={activeRecord.activeModifiers}
+                      // The history should be showing the user recent data for that specific exercise.
+                      // It isn't showing what they did last session. That could be anything (even a different exercise!)
+                      // But for an exercise, weight and reps may change. So the only thing we can filter on is the
+                      // name and modifiers. Modifiers may change too if there are "don't-cares" (like straps / wraps) but should
+                      // be mostly good enough. Reps are hard to deal with because it would need to distinguish eg sets of 6, 8-12, 10-20, amrap, failed reps, etc.
+                      // So that would need to be an entirely separate field on the record card.
+                      filter={{
+                        exercise: activeRecord.exercise?.name,
+                        modifier: activeRecord.activeModifiers,
+                        limit: 10,
+                      }}
+                    />
+                    // </Box>
                   )}
                 </Box>
               ))}
@@ -206,7 +209,7 @@ export default function SessionView({ date }: Props) {
                   )}
                 </Stack>
               </Box> */}
-            </Box>
+            </Glider>
             <Box display="flex" alignItems="center">
               <IconButton
                 sx={{ display: { xs: 'none', sm: 'block' } }}

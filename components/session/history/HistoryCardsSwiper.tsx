@@ -15,6 +15,9 @@ import { ArrayMatchType } from 'models/query-filters/MongoQuery'
 import { useState } from 'react'
 import 'swiper/css/pagination'
 
+import 'glider-js/glider.min.css'
+import Glider from 'react-glider'
+
 const AdaptiveHeight: KeenSliderPlugin = (slider) => {
   function updateHeight() {
     slider.container.style.height =
@@ -135,13 +138,13 @@ export default function HistoryCardsSwiper({
             <ArrowBackIosNewIcon />
           </IconButton>
         </Box>
-        <Box ref={sliderRef} className="keen-slider" sx={{ cursor: 'grab' }}>
+        <Glider draggable slidesToShow={1} scrollLock scrollLockDelay={0}>
           {records.map((record) => (
-            <Box className="keen-slider__slide" key={record._id}>
+            <Box key={record._id}>
               <HistoryCard {...{ record, displayFields, activeModifiers }} />
             </Box>
           ))}
-        </Box>
+        </Glider>
         <Box display="flex" width="auto" alignItems="center">
           <IconButton
             sx={{ display: { xs: 'none', sm: 'block' } }}
