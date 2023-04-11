@@ -14,14 +14,7 @@ import TitleBar from './upper/TitleBar'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIos'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { useState } from 'react'
-import {
-  A11y,
-  Keyboard,
-  Navigation,
-  Pagination,
-  Scrollbar,
-  Swiper as SwiperClass,
-} from 'swiper'
+import { Keyboard, Navigation, Pagination, Swiper as SwiperClass } from 'swiper'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import AddRecordCard from './AddRecordCard'
 import HistoryFilter from './history/HistoryFilter'
@@ -169,7 +162,7 @@ export default function SessionView({ date }: Props) {
                 // update when number of slides changes
                 onUpdate={updateSwiper}
                 noSwipingClass="swiper-no-swiping-outer"
-                modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
+                modules={[Navigation, Pagination, Keyboard]}
                 // breakpoints catch everything >= the given value
                 breakpoints={{
                   [theme.breakpoints.values.sm]: {
