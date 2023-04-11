@@ -75,11 +75,12 @@ export default function HistoryCardsSwiper({
           noSwipingClass="swiper-no-swiping-inner"
           className="swiper-no-swiping-outer"
           grabCursor
+          cssMode
           // This isn't documented, but the out of bounds behavior sets the active slide to
           // the closest valid index (first slide starting at 0). This makes it pretty easy
           // to default to the most recent date.
           initialSlide={filter.limit}
-          autoHeight
+          // autoHeight
           pagination={{
             el: `.${paginationClassName}`,
             clickable: true,
@@ -93,9 +94,11 @@ export default function HistoryCardsSwiper({
           {records
             ?.filter((record) => record.date !== currentDate)
             .map((record) => (
-              <SwiperSlide key={record._id}>
-                <HistoryCard {...{ record, displayFields }} />
-              </SwiperSlide>
+              <Box className="swiper-slide-transform" key={record._id}>
+                <SwiperSlide>
+                  <HistoryCard {...{ record, displayFields }} />
+                </SwiperSlide>
+              </Box>
             ))}
         </Swiper>
       </Box>

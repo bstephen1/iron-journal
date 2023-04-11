@@ -151,95 +151,101 @@ export default function SessionView({ date }: Props) {
                 <ArrowBackIosNewIcon />
               </IconButton>
             </Box>
-            <Swiper
-              // for some reason passing the swiper object to state doesn't update it, so added in an intermediary function
-              onSwiper={updateSwiper}
-              onSlideChange={updateSwiper}
-              // cssMode makes animations a LOT smoother on mobile. It does have some noticeable differences:
-              // - disables dragging with a mouse.
-              // - makes pagination bullets animate each change onClick instead of just going to the final one (desktop)
-              // - removes stretching animation when trying to scroll past end of list
-              // - makes scrolling more sensitive (like a higher dpi on a mouse)
-              // The history swipers are already smooth enough without it. May want to
-              // think about leaning down this outer swiper to increase performance, maybe
-              // pulling out the history swipers so they aren't nested. It's possible
-              // for swipers to control other swipers, which could be more performant than nesting.
-              cssMode
-              // update when number of slides changes
-              onUpdate={updateSwiper}
-              noSwipingClass="swiper-no-swiping-outer"
-              modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
-              // breakpoints catch everything >= the given value
-              breakpoints={{
-                [theme.breakpoints.values.sm]: {
-                  slidesPerView: 1,
-                },
-                [theme.breakpoints.values.md]: {
-                  slidesPerView: 2,
-                  centeredSlides: false,
-                  centerInsufficientSlides: true,
-                },
-                [theme.breakpoints.values.lg]: {
-                  slidesPerView: 3,
-                  centeredSlides: true,
-                  centerInsufficientSlides: false,
-                },
-              }}
-              spaceBetween={20}
-              keyboard
-              centeredSlides
-              navigation={{
-                prevEl: '.nav-prev',
-                nextEl: '.nav-next',
-              }}
-              grabCursor
-              watchOverflow
-              // need this for CSS to hide slides that are partially offscreen
-              watchSlidesProgress
-              pagination={{
-                el: '.pagination-above',
-                clickable: true,
-                // todo: maybe add a custom render and make the last one a "+" or something.
-                // Kind of tricky to do though.
-              }}
-              style={{ padding: '11px 4px', flexGrow: '1' }}
-            >
-              {sessionLog?.records.map((id, i) => (
-                <SwiperSlide key={id}>
-                  <RecordCard
-                    id={id}
-                    date={dayjs(date)}
-                    deleteRecord={handleDeleteRecord}
-                    swapRecords={handleSwapRecords}
-                    swiperIndex={i}
-                    updateSessionNotes={handleNotesChange}
-                    sessionNotes={sessionLog.notes}
-                    setMostRecentlyUpdatedExercise={
-                      setMostRecentlyUpdatedExercise
-                    }
-                    mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
-                  />
-                  <Box py={3}>
-                    <HistoryFilter id={id} key={id} />
-                  </Box>
-                </SwiperSlide>
-              ))}
-
-              <SwiperSlide
-                // if no records, disable swiping. The swiping prevents you from being able to close date picker
-                className={sessionHasRecords ? '' : 'swiper-no-swiping-outer'}
+            <Box width="100%">
+              <Swiper
+                // for some reason passing the swiper object to state doesn't update it, so added in an intermediary function
+                onSwiper={updateSwiper}
+                onSlideChange={updateSwiper}
+                // cssMode makes animations a LOT smoother on mobile. It does have some noticeable differences:
+                // - disables dragging with a mouse.
+                // - makes pagination bullets animate each change onClick instead of just going to the final one (desktop)
+                // - removes stretching animation when trying to scroll past end of list
+                // - makes scrolling more sensitive (like a higher dpi on a mouse)
+                // The history swipers are already smooth enough without it. May want to
+                // think about leaning down this outer swiper to increase performance, maybe
+                // pulling out the history swipers so they aren't nested. It's possible
+                // for swipers to control other swipers, which could be more performant than nesting.
+                cssMode
+                // update when number of slides changes
+                onUpdate={updateSwiper}
+                noSwipingClass="swiper-no-swiping-outer"
+                modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
+                // breakpoints catch everything >= the given value
+                breakpoints={{
+                  [theme.breakpoints.values.sm]: {
+                    slidesPerView: 1,
+                  },
+                  [theme.breakpoints.values.md]: {
+                    slidesPerView: 2,
+                    centeredSlides: false,
+                    centerInsufficientSlides: true,
+                  },
+                  [theme.breakpoints.values.lg]: {
+                    slidesPerView: 3,
+                    centeredSlides: true,
+                    centerInsufficientSlides: false,
+                  },
+                }}
+                spaceBetween={20}
+                keyboard
+                centeredSlides
+                navigation={{
+                  prevEl: '.nav-prev',
+                  nextEl: '.nav-next',
+                }}
+                grabCursor
+                watchOverflow
+                // need this for CSS to hide slides that are partially offscreen
+                watchSlidesProgress
+                pagination={{
+                  el: '.pagination-above',
+                  clickable: true,
+                  // todo: maybe add a custom render and make the last one a "+" or something.
+                  // Kind of tricky to do though.
+                }}
+                style={{ padding: '11px 4px', flexGrow: '1' }}
               >
-                <Stack spacing={2} sx={{ p: 0.5 }}>
-                  <AddRecordCard handleAdd={handleAddRecord} />
-                  {!sessionHasRecords && (
-                    <CopySessionCard
-                      date={dayjs(date)}
-                      handleUpdateSession={handleUpdateSession}
-                    />
-                  )}
-                </Stack>
-              </SwiperSlide>
-            </Swiper>
+                {sessionLog?.records.map((id, i) => (
+                  <Box className="swiper-slide-transform" key={id}>
+                    <SwiperSlide>
+                      <RecordCard
+                        id={id}
+                        date={dayjs(date)}
+                        deleteRecord={handleDeleteRecord}
+                        swapRecords={handleSwapRecords}
+                        swiperIndex={i}
+                        updateSessionNotes={handleNotesChange}
+                        sessionNotes={sessionLog.notes}
+                        setMostRecentlyUpdatedExercise={
+                          setMostRecentlyUpdatedExercise
+                        }
+                        mostRecentlyUpdatedExercise={
+                          mostRecentlyUpdatedExercise
+                        }
+                      />
+                      <Box py={3}>
+                        <HistoryFilter id={id} key={id} />
+                      </Box>
+                    </SwiperSlide>
+                  </Box>
+                ))}
+
+                <SwiperSlide
+                  // if no records, disable swiping. The swiping prevents you from being able to close date picker
+                  className={sessionHasRecords ? '' : 'swiper-no-swiping-outer'}
+                >
+                  <Stack spacing={2} sx={{ p: 0.5 }}>
+                    <AddRecordCard handleAdd={handleAddRecord} />
+                    {!sessionHasRecords && (
+                      <CopySessionCard
+                        date={dayjs(date)}
+                        handleUpdateSession={handleUpdateSession}
+                      />
+                    )}
+                  </Stack>
+                </SwiperSlide>
+              </Swiper>
+            </Box>
             <Box display="flex" alignItems="center">
               <IconButton
                 sx={{ display: { xs: 'none', sm: 'block' } }}
