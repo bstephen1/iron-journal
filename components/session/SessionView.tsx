@@ -137,7 +137,7 @@ export default function SessionView({ date }: Props) {
               // Unnesting the history swipers does NOT increase performance. Actually it may
               // even be worse to frequently create/destroy swipers. This swiper still has the
               // laggy non-cssMode swipes without any history swiper at all.
-              cssMode
+              // cssMode
               // update when number of slides changes
               onUpdate={updateSwiper}
               noSwipingClass="swiper-no-swiping-record"
