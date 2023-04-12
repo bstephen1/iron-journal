@@ -19,7 +19,7 @@ export default function Navbar() {
 
     // adding "passive" is supposed to increase performance for scrolling. See:
     // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#improving_scrolling_performance_with_passive_listeners
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('scroll', handleScroll, { passive: false })
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
