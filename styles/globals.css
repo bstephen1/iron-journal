@@ -27,3 +27,8 @@ input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* the default background color for fullscreen is black */
+::backdrop {
+  background-color: white;
+}

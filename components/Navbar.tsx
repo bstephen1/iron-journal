@@ -1,6 +1,7 @@
 import { AppBar, Box, Slide, Toolbar, Typography } from '@mui/material'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import FullscreenButton from './FullscreenButton'
 import LoginButton from './LoginButton'
 import NavbarDrawer from './NavbarDrawer'
 
@@ -35,6 +36,7 @@ export default function Navbar() {
             <Link href={'/'}>Iron Log</Link>
           </Typography>
           <Box flex={1} />
+          <FullscreenButton />
           <LoginButton />
         </Toolbar>
       </AppBar>
