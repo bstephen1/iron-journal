@@ -1,8 +1,7 @@
+// @ts-nocheck
 import { Box, Divider, Stack, Typography, useTheme } from '@mui/material'
 import { useRecords } from 'lib/frontend/restService'
 import { RecordQuery } from 'models/query-filters/RecordQuery'
-import { Pagination } from 'swiper'
-import { Swiper, SwiperSlide } from 'swiper/react'
 import HistoryCard from './HistoryCard'
 
 import 'swiper/css'
@@ -83,27 +82,20 @@ export default function HistoryCardsSwiper({
       />
       {/* this box prevents Swiper from having infinite width. Width is required when the stack has alignItems centered */}
       <Box width="100%" className="swiper-no-swiping-record">
-        <Swiper
-          spaceBetween={20}
-          grabCursor
-          // This isn't documented, but the out of bounds behavior sets the active slide to
-          // the closest valid index (first slide starting at 0). This makes it pretty easy
-          // to default to the last index when length is unknown, but has a max possible value.
-          initialSlide={filter.limit}
-          // disable autoHeight if cssMode is enabled
-          autoHeight
-          pagination={{
-            el: `.${paginationClassName}`,
-            clickable: true,
-            // dynamic bullets work now without crashing, but they sometimes start shrinking and disappear.
-            // Normal bullets are more reliable.
-          }}
-          modules={[Pagination]}
-          style={{ padding: '11px 4px' }}
+        <swiper-container
+          space-between={20}
+          grab-cursor="true"
+          initial-slide={filter.limit}
+          // makes height zero
+          // auto-height="true"
+          pagination-el={`.${paginationClassName}`}
+          pagination-clickable="true"
+          // style doesn't seem to work
+          // style-padding="11px 4px"
         >
           {records
             ?.map((record) => (
-              <SwiperSlide key={record._id}>
+              <swiper-slide key={record._id}>
                 <HistoryCard
                   {...{
                     record,
@@ -111,12 +103,12 @@ export default function HistoryCardsSwiper({
                     filterModifiers: filter.modifier || [],
                   }}
                 />
-              </SwiperSlide>
+              </swiper-slide>
               // need to reverse so newest is on the right, not left. Can't do it in useRecords because
               // mongo applies sort before the limit. Also, reverse should be after map because it mutates the array.
             ))
             .reverse()}
-        </Swiper>
+        </swiper-container>
       </Box>
     </Stack>
   )

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Box, Stack, useTheme } from '@mui/material'
 import NavigationArrow from 'components/slider/NavigationArrow'
 import PaginationBullets from 'components/slider/PaginationBullets'
@@ -13,13 +14,10 @@ import Note from 'models/Note'
 import Record from 'models/Record'
 import SessionLog from 'models/SessionLog'
 import { useState } from 'react'
-import { Keyboard, Navigation, Pagination, Swiper as SwiperClass } from 'swiper'
+import { Swiper as SwiperClass } from 'swiper'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import AddRecordCard from './AddRecordCard'
-import CopySessionCard from './CopySessionCard'
 import RecordCard from './records/RecordCard'
 import SessionModules from './upper/SessionModules'
 import TitleBar from './upper/TitleBar'
@@ -123,62 +121,22 @@ export default function SessionView({ date }: Props) {
               className={navPrevClassName}
               disabled={isBeginning}
             />
-            <Swiper
-              // for some reason passing the swiper object to state doesn't update it, so added in an intermediary function
-              onSwiper={updateSwiper}
-              onSlideChange={updateSwiper}
-              // cssMode makes animations a LOT smoother on mobile. It does have some noticeable differences:
-              // - disables dragging with a mouse.
-              // - makes pagination bullets animate each change onClick instead of just going to the final one (desktop)
-              // - removes stretching animation when trying to scroll past end of list
-              // - makes scrolling more sensitive (like a higher dpi on a mouse)
-              // The history swipers are already smooth enough without it. May want to
-              // think about leaning down this outer swiper to increase performance.
-              // Unnesting the history swipers does NOT increase performance. Actually it may
-              // even be worse to frequently create/destroy swipers. This swiper still has the
-              // laggy non-cssMode swipes without any history swiper at all.
-              cssMode
-              // update when number of slides changes
-              onUpdate={updateSwiper}
-              noSwipingClass="swiper-no-swiping-record"
-              modules={[Navigation, Pagination, Keyboard]}
-              // breakpoints catch everything >= the given value
-              breakpoints={{
-                [theme.breakpoints.values.sm]: {
-                  slidesPerView: 1,
-                },
-                [theme.breakpoints.values.md]: {
-                  slidesPerView: 2,
-                  centeredSlides: false,
-                  centerInsufficientSlides: true,
-                },
-                [theme.breakpoints.values.lg]: {
-                  slidesPerView: 3,
-                  centeredSlides: true,
-                  centerInsufficientSlides: false,
-                },
-              }}
-              spaceBetween={20}
-              keyboard
-              centeredSlides
-              navigation={{
-                prevEl: `.${navPrevClassName}`,
-                nextEl: `.${navNextClassName}`,
-              }}
-              grabCursor
-              watchOverflow
+            <swiper-container
+              no-swiping-class="swiper-no-swiping-record"
+              slides-per-view="1"
+              space-between="20"
+              pagination="true"
+              centered-slides="true"
+              grab-cursor="true"
+              watch-overflow="true"
               // need this for CSS to hide slides that are partially offscreen
-              watchSlidesProgress
-              pagination={{
-                el: `.${paginationClassName}`,
-                clickable: true,
-                // todo: maybe add a custom render and make the last one a "+" or something.
-                // Kind of tricky to do though.
-              }}
+              watch-slides-progress="true"
+              pagination-el={`.${paginationClassName}`}
+              pagination-clickable="true"
               style={{ padding: '11px 4px', flexGrow: '1' }}
             >
               {sessionLog?.records.map((id, i) => (
-                <SwiperSlide key={id}>
+                <swiper-slide key={id}>
                   <RecordCard
                     id={id}
                     deleteRecord={handleDeleteRecord}
@@ -191,10 +149,10 @@ export default function SessionView({ date }: Props) {
                     }
                     mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
                   />
-                </SwiperSlide>
+                </swiper-slide>
               ))}
 
-              <SwiperSlide
+              {/* <SwiperSlide
                 // if no records, disable swiping. The swiping prevents you from being able to close date picker
                 className={sessionHasRecords ? '' : 'swiper-no-swiping-record'}
               >
@@ -207,8 +165,8 @@ export default function SessionView({ date }: Props) {
                     />
                   )}
                 </Stack>
-              </SwiperSlide>
-            </Swiper>
+              </SwiperSlide> */}
+            </swiper-container>
             <NavigationArrow
               direction="next"
               className={navNextClassName}

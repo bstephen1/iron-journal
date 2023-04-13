@@ -6,6 +6,7 @@ import type { AppProps } from 'next/app'
 import { createContext } from 'react'
 import 'styles/globals.css'
 import 'styles/nprogress.css'
+import { register as registerSwiperWebComponents } from 'swiper/element/bundle'
 import { SWRConfig } from 'swr'
 
 export const RouterLoadingContext = createContext(false)
@@ -23,6 +24,8 @@ interface IronLogPageProps {
 }
 function IronLog({ Component, pageProps }: AppProps<IronLogPageProps>) {
   const isRouterLoading = useRouterLoading()
+  // swiper needs to be registered once, globally
+  registerSwiperWebComponents()
 
   return (
     <SessionProvider session={pageProps.session}>

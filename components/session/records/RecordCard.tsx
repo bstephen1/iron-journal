@@ -1,3 +1,4 @@
+// @ts-nocheck
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
@@ -42,7 +43,6 @@ import { Status } from 'models/Status'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { useMeasure } from 'react-use'
-import { useSwiper, useSwiperSlide } from 'swiper/react'
 import HistoryCardsSwiper from '../history/HistoryCardsSwiper'
 import HistoryFilterHeaderButton from '../history/HistoryFilterHeaderButton'
 import RecordHeaderButton from './RecordHeaderButton'
@@ -81,9 +81,9 @@ export default function RecordCard({
   updateSessionNotes,
   sessionNotes = [],
 }: Props) {
-  const swiper = useSwiper()
+  const swiper = {}
   // this hook needs to be called for useSwiper() to update the activeIndex
-  const { isActive, isNext, isPrev } = useSwiperSlide()
+  // const { isActive, isNext, isPrev } = useSwiperSlide()
   const theme = useTheme()
   const noSwipingAboveSm = useMediaQuery(theme.breakpoints.up('sm'))
     ? 'swiper-no-swiping-record'
@@ -102,9 +102,9 @@ export default function RecordCard({
   const [historyFilter, setHistoryFilter] = useState<RecordQuery>({})
   const [hasBeenVisible, setHasBeenVisible] = useState(false)
 
-  useEffect(() => {
-    ;(isActive || isNext || isPrev) && setHasBeenVisible(true)
-  }, [isActive, isNext, isPrev])
+  // useEffect(() => {
+  //   ;(isActive || isNext || isPrev) && setHasBeenVisible(true)
+  // }, [isActive, isNext, isPrev])
 
   useEffect(() => {
     if (!record || mostRecentlyUpdatedExercise?._id !== record?.exercise?._id) {
@@ -459,15 +459,15 @@ export default function RecordCard({
           It also doesn't hinder desktop experience, where multiple slides may be
           visible at once but the added load is not likely to degrade performance.
         */}
-        {hasBeenVisible && (
-          <Box pt={3}>
-            <HistoryCardsSwiper
-              filter={historyFilter}
-              paginationId={_id}
-              displayFields={displayFields}
-            />
-          </Box>
-        )}
+        {/* {hasBeenVisible && ( */}
+        <Box pt={3}>
+          <HistoryCardsSwiper
+            filter={historyFilter}
+            paginationId={_id}
+            displayFields={displayFields}
+          />
+        </Box>
+        {/* )} */}
       </Card>
     </>
   )
