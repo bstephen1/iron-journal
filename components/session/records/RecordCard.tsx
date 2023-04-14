@@ -81,9 +81,6 @@ export default function RecordCard({
   updateSessionNotes,
   sessionNotes = [],
 }: Props) {
-  const swiper = {}
-  // this hook needs to be called for useSwiper() to update the activeIndex
-  // const { isActive, isNext, isPrev } = useSwiperSlide()
   const theme = useTheme()
   const noSwipingAboveSm = useMediaQuery(theme.breakpoints.up('sm'))
     ? 'swiper-no-swiping-record'
@@ -226,14 +223,14 @@ export default function RecordCard({
 
   const handleDeleteRecord = async () => {
     await deleteRecord(_id)
-    swiper.update() // have to update swiper whenever changing swiper elements
+    // swiper.update() // have to update swiper whenever changing swiper elements
   }
 
   const handleSwapRecords = async (i: number, j: number) => {
     await swapRecords(i, j)
-    swiper.update()
+    // swiper.update()
     // todo: think about animation here. Instant speed? Maybe if it could change to a fade transition?
-    swiper.slideTo(j, 0)
+    // swiper.slideTo(j, 0)
   }
 
   const handleExerciseChange = async (newExercise: Exercise | null) => {
@@ -272,7 +269,7 @@ export default function RecordCard({
     <RecordHeaderButton
       title="Move current record to the right"
       // disable on the penultimate slide because the last is the "add record" button
-      disabled={swiperIndex >= swiper.slides?.length - 2}
+      // disabled={swiperIndex >= swiper.slides?.length - 2}
       onClick={() => handleSwapRecords(swiperIndex, swiperIndex + 1)}
     >
       <KeyboardDoubleArrowRightIcon />

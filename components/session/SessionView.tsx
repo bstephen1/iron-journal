@@ -13,11 +13,13 @@ import Exercise from 'models/Exercise'
 import Note from 'models/Note'
 import Record from 'models/Record'
 import SessionLog from 'models/SessionLog'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Swiper as SwiperClass } from 'swiper'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+import AddRecordCard from './AddRecordCard'
+import CopySessionCard from './CopySessionCard'
 import RecordCard from './records/RecordCard'
 import SessionModules from './upper/SessionModules'
 import TitleBar from './upper/TitleBar'
@@ -35,6 +37,7 @@ export default function SessionView({ date }: Props) {
     useState<Exercise | null>(null)
   const { sessionLog, mutate, isLoading } = useSessionLog(date)
   const sessionHasRecords = !!sessionLog?.records.length
+  const swiperElRef = useRef(null)
   const paginationClassName = 'pagination-record-card'
   const navPrevClassName = 'nav-prev'
   const navNextClassName = 'nav-next'
@@ -122,10 +125,15 @@ export default function SessionView({ date }: Props) {
               disabled={isBeginning}
             />
             <swiper-container
+              ref={swiperElRef}
               no-swiping-class="swiper-no-swiping-record"
               slides-per-view="1"
               space-between="20"
               pagination="true"
+              navigation="true"
+              navigation-prev-el={`.${navPrevClassName}`}
+              navigation-next-el={`.${navNextClassName}`}
+              keyboard="true"
               centered-slides="true"
               grab-cursor="true"
               watch-overflow="true"
@@ -133,7 +141,7 @@ export default function SessionView({ date }: Props) {
               watch-slides-progress="true"
               pagination-el={`.${paginationClassName}`}
               pagination-clickable="true"
-              style={{ padding: '11px 4px', flexGrow: '1' }}
+              // style={{ padding: '11px 4px', flexGrow: '1' }}
             >
               {sessionLog?.records.map((id, i) => (
                 <swiper-slide key={id}>
@@ -152,7 +160,7 @@ export default function SessionView({ date }: Props) {
                 </swiper-slide>
               ))}
 
-              {/* <SwiperSlide
+              <swiper-slide
                 // if no records, disable swiping. The swiping prevents you from being able to close date picker
                 className={sessionHasRecords ? '' : 'swiper-no-swiping-record'}
               >
@@ -165,7 +173,7 @@ export default function SessionView({ date }: Props) {
                     />
                   )}
                 </Stack>
-              </SwiperSlide> */}
+              </swiper-slide>
             </swiper-container>
             <NavigationArrow
               direction="next"

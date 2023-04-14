@@ -4,13 +4,11 @@ import { useExercises } from 'lib/frontend/restService'
 import Exercise from 'models/Exercise'
 import { Status } from 'models/Status'
 import { useState } from 'react'
-import { useSwiper } from 'swiper/react'
 
 interface Props {
   handleAdd: (exercise: Exercise) => void
 }
 export default function AddRecordCard(props: Props) {
-  const swiper = useSwiper()
   const [exercise, setExercise] = useState<Exercise | null>(null)
   const [category, setCategory] = useState<string | null>(null)
   const { exercises, mutate: mutateExercises } = useExercises({
@@ -22,7 +20,7 @@ export default function AddRecordCard(props: Props) {
 
     props.handleAdd(exercise)
 
-    swiper.update()
+    // swiper.update()
     setExercise(null)
   }
 
