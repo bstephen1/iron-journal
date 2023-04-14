@@ -90,8 +90,6 @@ export default function HistoryCardsSwiper({
           // auto-height="true"
           pagination-el={`.${paginationClassName}`}
           pagination-clickable="true"
-          // style doesn't seem to work
-          // style-padding="11px 4px"
         >
           {records
             ?.map((record) => (
