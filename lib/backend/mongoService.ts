@@ -134,7 +134,7 @@ export async function fetchSessions({
 export async function updateSession(
   userId: ObjectId,
   sessionLog: SessionLog
-): Promise<SessionLog | null> {
+): Promise<SessionLog> {
   // Note: per nodejs mongo adapter docs, ModifyResult<> is deprecated and at some point
   // will be removed, leaving findOneAndXXX calls returning just the document itself.
   // See: https://mongodb.github.io/node-mongodb-native/5.1/interfaces/ModifyResult.html
@@ -147,7 +147,7 @@ export async function updateSession(
       returnDocument: 'after',
     }
   )
-  return res.value
+  return res.value as SessionLog
 }
 
 // todo: make this a transaction?
@@ -155,7 +155,7 @@ export async function deleteSessionRecord(
   userId: ObjectId,
   date: string,
   recordId: string
-): Promise<SessionLog | null> {
+): Promise<SessionLog> {
   await deleteRecord(userId, recordId)
   // $pull is equivalent to removing an element from an array
   const res: ModifyResult<SessionLog> = await sessions.findOneAndUpdate(
@@ -166,7 +166,7 @@ export async function deleteSessionRecord(
       returnDocument: 'after',
     }
   )
-  return res.value
+  return res.value as SessionLog
 }
 
 // todo: fetch sessions in date range
@@ -314,7 +314,7 @@ export async function fetchExercise(
 export async function updateExercise(
   userId: ObjectId,
   exercise: Exercise
-): Promise<Exercise | null> {
+): Promise<Exercise> {
   const res: ModifyResult<Exercise> = await exercises.findOneAndReplace(
     { userId, _id: exercise._id },
     { ...exercise, userId },
@@ -324,13 +324,13 @@ export async function updateExercise(
       projection: { userId: 0 },
     }
   )
-  return res.value
+  return res.value as Exercise
 }
 
 export async function updateExerciseFields(
   userId: ObjectId,
   { id, updates }: UpdateFieldsProps<Exercise>
-): Promise<Exercise | null> {
+): Promise<Exercise> {
   const res: ModifyResult<Exercise> = await exercises.findOneAndUpdate(
     { userId, _id: id },
     { $set: updates },
@@ -339,7 +339,7 @@ export async function updateExerciseFields(
       projection: { userId: 0 },
     }
   )
-  return res.value
+  return res.value as Exercise
 }
 
 //----------
@@ -376,7 +376,7 @@ export async function fetchModifier(
 export async function updateModifierFields(
   userId: ObjectId,
   { id, updates }: UpdateFieldsProps<Modifier>
-): Promise<Modifier | null> {
+): Promise<Modifier> {
   if (updates.name) {
     const oldModifier = await modifiers.find({ userId, _id: id }).next()
     await exercises.updateMany(
@@ -404,7 +404,7 @@ export async function updateModifierFields(
     { $set: updates },
     { projection: { userId: 0 }, returnDocument: 'after' }
   )
-  return res.value
+  return res.value as Modifier
 }
 
 //----------
@@ -440,7 +440,7 @@ export async function fetchCategory(
 export async function updateCategoryFields(
   userId: ObjectId,
   { id, updates }: UpdateFieldsProps<Category>
-): Promise<Category | null> {
+): Promise<Category> {
   // todo: should this be a transaction? Apparently that requires a cluster
   // can run single testing node as cluster with mongod --replset rs0
   if (updates.name) {
@@ -459,7 +459,7 @@ export async function updateCategoryFields(
     { $set: updates },
     { projection: { userId: 0 }, returnDocument: 'after' }
   )
-  return res.value
+  return res.value as Category
 }
 
 //------------
@@ -503,7 +503,7 @@ export async function fetchBodyweightHistory({
 export async function updateBodyweight(
   userId: ObjectId,
   newBodyweight: Bodyweight
-): Promise<Bodyweight | null> {
+): Promise<Bodyweight> {
   const res: ModifyResult<Bodyweight> =
     await bodyweightHistory.findOneAndUpdate(
       { userId, date: newBodyweight.date, type: newBodyweight.type },
@@ -521,7 +521,7 @@ export async function updateBodyweight(
         returnDocument: 'after',
       }
     )
-  return res.value
+  return res.value as Bodyweight
 }
 
 // todo: use id, not date. Not currently in use.
