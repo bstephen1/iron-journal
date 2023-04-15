@@ -1,4 +1,3 @@
-// @ts-nocheck
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
@@ -99,12 +98,6 @@ export default function RecordCard({
     useState<null | HTMLElement>(null)
   const shouldCondense = useMemo(() => titleWidth < 360, [titleWidth])
   const [historyFilter, setHistoryFilter] = useState<RecordQuery>({})
-  const [hasBeenVisible, setHasBeenVisible] = useState(false)
-
-  // todo
-  // useEffect(() => {
-  //   ;(isActive || isNext || isPrev) && setHasBeenVisible(true)
-  // }, [isActive, isNext, isPrev])
 
   useEffect(() => {
     if (!record || mostRecentlyUpdatedExercise?._id !== record?.exercise?._id) {
@@ -459,7 +452,8 @@ export default function RecordCard({
           It also doesn't hinder desktop experience, where multiple slides may be
           visible at once but the added load is not likely to degrade performance.
         */}
-        {/* {hasBeenVisible && ( */}
+        {/* Tried only loading history when slides became visible, but tracking the active 
+            slide significantly lags slide transitions.  */}
         <Box pt={3}>
           <HistoryCardsSwiper
             filter={historyFilter}
@@ -467,7 +461,6 @@ export default function RecordCard({
             displayFields={displayFields}
           />
         </Box>
-        {/* )} */}
       </Card>
     </>
   )

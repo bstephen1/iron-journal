@@ -66,8 +66,12 @@ export default function SessionView({ date }: Props) {
 
     Object.assign(swiperEl, swiperParams)
 
+    // Can add event listeners to swiperEl here. Note: events must be changed to all lowercase!
+    // Warning: adding event listeners significantly reduces performance!
+    // Using event listeners may be what has been slowing down react swiper.
+
     swiperEl.initialize()
-    setSwiper({ current: swiperEl })
+    setSwiper(swiperEl.swiper)
   }, [])
 
   const paginationClassName = 'pagination-record-card'
@@ -174,38 +178,44 @@ export default function SessionView({ date }: Props) {
               pagination-el={`.${paginationClassName}`}
               pagination-clickable="true"
             >
-              {sessionLog?.records.map((id, i) => (
-                <swiper-slide key={id}>
-                  <RecordCard
-                    id={id}
-                    swiper={swiper}
-                    deleteRecord={handleDeleteRecord}
-                    swapRecords={handleSwapRecords}
-                    swiperIndex={i}
-                    updateSessionNotes={handleNotesChange}
-                    sessionNotes={sessionLog.notes}
-                    setMostRecentlyUpdatedExercise={
-                      setMostRecentlyUpdatedExercise
-                    }
-                    mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
-                  />
-                </swiper-slide>
-              ))}
-
-              <swiper-slide
-                // if no records, disable swiping. The swiping prevents you from being able to close date picker
-                className={sessionHasRecords ? '' : 'swiper-no-swiping-record'}
-              >
-                <Stack spacing={2} sx={{ p: 0.5 }}>
-                  <AddRecordCard handleAdd={handleAddRecord} />
-                  {!sessionHasRecords && (
-                    <CopySessionCard
-                      date={dayjs(date)}
-                      handleUpdateSession={handleUpdateSession}
+              {/* wait for swiperEl to be set  */}
+              {!!swiper &&
+                sessionLog?.records.map((id, i) => (
+                  <swiper-slide key={id}>
+                    <RecordCard
+                      id={id}
+                      swiper={swiper}
+                      deleteRecord={handleDeleteRecord}
+                      swapRecords={handleSwapRecords}
+                      swiperIndex={i}
+                      updateSessionNotes={handleNotesChange}
+                      sessionNotes={sessionLog.notes}
+                      setMostRecentlyUpdatedExercise={
+                        setMostRecentlyUpdatedExercise
+                      }
+                      mostRecentlyUpdatedExercise={mostRecentlyUpdatedExercise}
                     />
-                  )}
-                </Stack>
-              </swiper-slide>
+                  </swiper-slide>
+                ))}
+
+              {!!swiper && (
+                <swiper-slide
+                  // if no records, disable swiping. The swiping prevents you from being able to close date picker
+                  className={
+                    sessionHasRecords ? '' : 'swiper-no-swiping-record'
+                  }
+                >
+                  <Stack spacing={2} sx={{ p: 0.5 }}>
+                    <AddRecordCard handleAdd={handleAddRecord} />
+                    {!sessionHasRecords && (
+                      <CopySessionCard
+                        date={dayjs(date)}
+                        handleUpdateSession={handleUpdateSession}
+                      />
+                    )}
+                  </Stack>
+                </swiper-slide>
+              )}
             </swiper-container>
             <NavigationArrow
               direction="next"
