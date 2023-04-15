@@ -13,8 +13,7 @@ import Exercise from 'models/Exercise'
 import Note from 'models/Note'
 import Record from 'models/Record'
 import SessionLog from 'models/SessionLog'
-import { useRef, useState } from 'react'
-import { Swiper as SwiperClass } from 'swiper'
+import { useCallback, useState } from 'react'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -29,23 +28,51 @@ interface Props {
 }
 export default function SessionView({ date }: Props) {
   const theme = useTheme()
-  const [isBeginning, setIsBeginning] = useState(false)
-  const [isEnd, setIsEnd] = useState(false)
+
   // This is used to alert when a record changes an exercise, so other records can
   // be notified and mutate themselves to retrieve the new exercise data.
   const [mostRecentlyUpdatedExercise, setMostRecentlyUpdatedExercise] =
     useState<Exercise | null>(null)
   const { sessionLog, mutate, isLoading } = useSessionLog(date)
   const sessionHasRecords = !!sessionLog?.records.length
-  const swiperElRef = useRef(null)
+
+  const [swiper, setSwiper] = useState(null)
+  // This is a callback ref. See https://legacy.reactjs.org/docs/hooks-faq.html#how-can-i-measure-a-dom-node
+  const swiperElRef = useCallback((swiperEl) => {
+    if (!swiperEl) return
+
+    const swiperParams = {
+      breakpoints: {
+        [theme.breakpoints.values.sm]: {
+          slidesPerView: 1,
+        },
+        [theme.breakpoints.values.md]: {
+          slidesPerView: 2,
+          centeredSlides: false,
+          centerInsufficientSlides: true,
+        },
+        [theme.breakpoints.values.lg]: {
+          slidesPerView: 3,
+          centeredSlides: true,
+          centerInsufficientSlides: false,
+        },
+      },
+      injectStyles: [
+        `swiper-container {
+            padding: 11px 4px !important; 
+        }`,
+      ],
+    }
+
+    Object.assign(swiperEl, swiperParams)
+
+    swiperEl.initialize()
+    setSwiper({ current: swiperEl })
+  }, [])
+
   const paginationClassName = 'pagination-record-card'
   const navPrevClassName = 'nav-prev'
   const navNextClassName = 'nav-next'
-
-  const updateSwiper = (swiper: SwiperClass) => {
-    setIsBeginning(swiper.isBeginning)
-    setIsEnd(swiper.isEnd)
-  }
 
   const handleUpdateSession = async (newSessionLog: SessionLog) => {
     mutate(updateSessionLog(newSessionLog), {
@@ -122,12 +149,20 @@ export default function SessionView({ date }: Props) {
             <NavigationArrow
               direction="prev"
               className={navPrevClassName}
-              disabled={isBeginning}
+              // todo: this doesn't disable
+              disabled={swiper?.isBeginning}
             />
+
+            {/* todo: resizing breaks pagination and navigation clicks */}
+            {/* swiper is being used with web components. The swiper library does
+                provide react components, but they have noticeably poor performance,
+                and are marked as deprecated. */}
             <swiper-container
+              // Complex attributes (eg, breakpoints) need to be assigned in the callback ref,
+              // so have to wait to init swiper until those attributes are assigned.
+              init="false"
               ref={swiperElRef}
               no-swiping-class="swiper-no-swiping-record"
-              slides-per-view="1"
               space-between="20"
               pagination="true"
               navigation="true"
@@ -136,17 +171,14 @@ export default function SessionView({ date }: Props) {
               keyboard="true"
               centered-slides="true"
               grab-cursor="true"
-              watch-overflow="true"
-              // need this for CSS to hide slides that are partially offscreen
-              watch-slides-progress="true"
               pagination-el={`.${paginationClassName}`}
               pagination-clickable="true"
-              // style={{ padding: '11px 4px', flexGrow: '1' }}
             >
               {sessionLog?.records.map((id, i) => (
                 <swiper-slide key={id}>
                   <RecordCard
                     id={id}
+                    swiper={swiper}
                     deleteRecord={handleDeleteRecord}
                     swapRecords={handleSwapRecords}
                     swiperIndex={i}
@@ -178,7 +210,7 @@ export default function SessionView({ date }: Props) {
             <NavigationArrow
               direction="next"
               className={navNextClassName}
-              disabled={isEnd}
+              disabled={swiper?.isEnd}
             />
           </Stack>
         </Box>
