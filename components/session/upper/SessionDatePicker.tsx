@@ -9,7 +9,7 @@ import { Dayjs } from 'dayjs'
 import { DATE_FORMAT, URI_SESSIONS } from 'lib/frontend/constants'
 import { paramify, useSessionLogs } from 'lib/frontend/restService'
 import { swrFetcher } from 'lib/util'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { preload } from 'swr'
 
 // The query gets data for the current month +/- 1 month so that
@@ -25,6 +25,16 @@ const buildSessionLogQuery = (relativeMonth: number, date: Dayjs) => ({
     .add(relativeMonth + 1, 'month')
     .format(DATE_FORMAT),
 })
+
+// Preload adjacent months in useSWR's cache.
+// The cache uses the same api uri as the key, so we need to build the same query that the
+// currently selected month will use instead of widening the range.
+const fetchNearbyMonths = (newMonth: Dayjs) => {
+  const prev = buildSessionLogQuery(-1, newMonth)
+  const next = buildSessionLogQuery(1, newMonth)
+  preload(URI_SESSIONS + paramify({ ...prev }), swrFetcher)
+  preload(URI_SESSIONS + paramify({ ...next }), swrFetcher)
+}
 
 interface Props {
   date: Dayjs
@@ -55,19 +65,6 @@ function SessionDatePickerInner({
     buildSessionLogQuery(0, date)
   )
 
-  // Preload adjacent months in useSWR's cache.
-  // The cache uses the same api uri as the key, so we need to build the same query that the
-  // currently selected month will use instead of widening the range.
-  const fetchNearbyMonths = (newMonth: Dayjs) => {
-    const prev = buildSessionLogQuery(-1, newMonth)
-    const next = buildSessionLogQuery(1, newMonth)
-    // console.log(URI_SESSIONS + paramify({ ...prev }))
-    if (typeof window !== 'undefined') {
-      preload(URI_SESSIONS + paramify({ ...prev }), swrFetcher)
-      preload(URI_SESSIONS + paramify({ ...next }), swrFetcher)
-    }
-  }
-
   const handleChange = (newPickerValue: Dayjs | null) => {
     if (newPickerValue?.isValid()) {
       handleDateChange(newPickerValue)
@@ -76,7 +73,9 @@ function SessionDatePickerInner({
   }
 
   // prefetch on init
-  fetchNearbyMonths(date)
+  useEffect(() => {
+    fetchNearbyMonths(date)
+  }, [])
 
   // todo: If using arrow keys while picker is open it should stop propagation so the underlying swiper doesn't move too.
   // todo: can add background colors for meso cycles: https://mui.com/x/react-date-pickers/date-picker/#customized-day-rendering
