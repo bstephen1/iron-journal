@@ -7,7 +7,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GitHubProvider from 'next-auth/providers/github'
 
 const devProviders =
-  process.env.NODE_ENV !== ''
+  process.env.NODE_ENV !== 'test'
     ? [
         // This provider logs on as the test user for dev mode.
         // todo: could also use this pattern to setup a (readonly?) "guest" account for new users to look around
