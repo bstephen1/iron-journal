@@ -61,8 +61,11 @@ function SessionDatePickerInner({
   const fetchNearbyMonths = (newMonth: Dayjs) => {
     const prev = buildSessionLogQuery(-1, newMonth)
     const next = buildSessionLogQuery(1, newMonth)
-    // preload(URI_SESSIONS + paramify({ ...prev }), swrFetcher)
-    // preload(URI_SESSIONS + paramify({ ...next }), swrFetcher)
+    // console.log(URI_SESSIONS + paramify({ ...prev }))
+    if (typeof window !== 'undefined') {
+      preload(URI_SESSIONS + paramify({ ...prev }), swrFetcher)
+      preload(URI_SESSIONS + paramify({ ...next }), swrFetcher)
+    }
   }
 
   const handleChange = (newPickerValue: Dayjs | null) => {
