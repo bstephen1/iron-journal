@@ -36,6 +36,7 @@ interface Props {
   textFieldProps?: TextFieldProps
 }
 export default function SessionDatePicker(props: Props) {
+  console.log(props.date.format(DATE_FORMAT))
   return (
     <SessionDatePickerInner key={props.date.format(DATE_FORMAT)} {...props} />
   )
@@ -50,9 +51,11 @@ function SessionDatePickerInner({
   // You can type freely in a DatePicker. pickerValue updates on input change,
   // and only triggers handleDateChange when pickerValue changes to a valid date.
   const [pickerValue, setPickerValue] = useState<Dayjs | null>(date)
-  const { sessionLogsIndex, isLoading } = useSessionLogs(
-    buildSessionLogQuery(0, date)
-  )
+  // const { sessionLogsIndex, isLoading } = useSessionLogs(
+  //   buildSessionLogQuery(0, date)
+  // )
+  const isLoading = false
+  const sessionLogsIndex = {} as any
 
   // Preload adjacent months in useSWR's cache.
   // The cache uses the same api uri as the key, so we need to build the same query that the
