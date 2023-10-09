@@ -21,11 +21,11 @@ export default function TitleBar({ date }: Props) {
     <Grid container spacing={2}>
       {/* todo: change this to a data type which is user defined per program, or freestyle/unstructured type*/}
       <Grid xs={12} sm={4}>
-        <SessionDatePicker
+        {/* <SessionDatePicker
           date={date}
           handleDateChange={handleDateChange}
           textFieldProps={{ fullWidth: true }}
-        />
+        /> */}
       </Grid>
       <Grid xs={12} sm={4}>
         <TextField label="Session Type" fullWidth />
