@@ -51,11 +51,9 @@ function SessionDatePickerInner({
   // You can type freely in a DatePicker. pickerValue updates on input change,
   // and only triggers handleDateChange when pickerValue changes to a valid date.
   const [pickerValue, setPickerValue] = useState<Dayjs | null>(date)
-  // const { sessionLogsIndex, isLoading } = useSessionLogs(
-  //   buildSessionLogQuery(0, date)
-  // )
-  const isLoading = false
-  const sessionLogsIndex = {} as any
+  const { sessionLogsIndex, isLoading } = useSessionLogs(
+    buildSessionLogQuery(0, date)
+  )
 
   // Preload adjacent months in useSWR's cache.
   // The cache uses the same api uri as the key, so we need to build the same query that the
@@ -63,8 +61,8 @@ function SessionDatePickerInner({
   const fetchNearbyMonths = (newMonth: Dayjs) => {
     const prev = buildSessionLogQuery(-1, newMonth)
     const next = buildSessionLogQuery(1, newMonth)
-    preload(URI_SESSIONS + paramify({ ...prev }), swrFetcher)
-    preload(URI_SESSIONS + paramify({ ...next }), swrFetcher)
+    // preload(URI_SESSIONS + paramify({ ...prev }), swrFetcher)
+    // preload(URI_SESSIONS + paramify({ ...next }), swrFetcher)
   }
 
   const handleChange = (newPickerValue: Dayjs | null) => {
