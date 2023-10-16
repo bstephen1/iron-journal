@@ -13,7 +13,11 @@ import {
   ArrayMatchType,
   ArrayMatchTypeDescription,
 } from 'models/query-filters/MongoQuery'
-import { RecordQuery } from 'models/query-filters/RecordQuery'
+import {
+  RecordQuery,
+  setMatchTypeDescriptions,
+  setMatchTypes,
+} from 'models/query-filters/RecordQuery'
 import Record, { DEFAULT_SET_TYPE, SetType } from 'models/Record'
 import { Units } from 'models/Set'
 import { useState } from 'react'
@@ -57,6 +61,7 @@ export default function HistoryFilterHeaderButton({
         onClose={() => {
           setOpen(false)
         }}
+        scroll="body"
       >
         <DialogTitle>History Filter</DialogTitle>
         <DialogContent>
@@ -99,6 +104,17 @@ export default function HistoryFilterHeaderButton({
               setType={setType}
               handleSubmit={updateFilter}
               sets={[]}
+            />
+            <SelectFieldAutosave
+              fullWidth
+              label="Set Match Type"
+              options={[...setMatchTypes]}
+              handleSubmit={(setMatchType) => updateFilter({ setMatchType })}
+              initialValue={filter.setMatchType ?? 'none'}
+              variant="standard"
+              helperText={
+                setMatchTypeDescriptions[filter.setMatchType ?? 'none']
+              }
             />
           </Stack>
         </DialogContent>

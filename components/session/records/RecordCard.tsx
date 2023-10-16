@@ -171,6 +171,7 @@ function LoadedRecordCard({
     exercise: record.exercise?.name,
     limit: 10,
     modifierMatchType: ArrayMatchType.Equivalent,
+    setMatchType: 'set type',
     ...setType,
   })
 
@@ -377,6 +378,7 @@ function LoadedRecordCard({
                         ...setType,
                         modifier: activeModifiers,
                         modifierMatchType: ArrayMatchType.Equivalent,
+                        setMatchType: 'set type',
                       })
                     }
                   },
