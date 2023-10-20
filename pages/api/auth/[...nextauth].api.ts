@@ -6,25 +6,24 @@ import { JWT } from 'next-auth/jwt'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GitHubProvider from 'next-auth/providers/github'
 
-const devProviders =
-  process.env.NODE_ENV !== 'production'
-    ? [
-        // This provider logs on as the test user for dev mode.
-        // todo: could also use this pattern to setup a (readonly?) "guest" account for new users to look around
-        CredentialsProvider({
-          id: 'dev',
-          name: 'Dev User',
-          credentials: {},
-          async authorize() {
-            // ObjectId from '1234567890AB'
-            const user = { id: '313233343536373839304142' }
+const devProviders = true
+  ? [
+      // This provider logs on as the test user for dev mode.
+      // todo: could also use this pattern to setup a (readonly?) "guest" account for new users to look around
+      CredentialsProvider({
+        id: 'dev',
+        name: 'Dev User',
+        credentials: {},
+        async authorize() {
+          // ObjectId from '1234567890AB'
+          const user = { id: '313233343536373839304142' }
 
-            // Any object returned will be saved in `user` property of the JWT
-            return user
-          },
-        }),
-      ]
-    : []
+          // Any object returned will be saved in `user` property of the JWT
+          return user
+        },
+      }),
+    ]
+  : []
 
 export const authOptions: NextAuthOptions = {
   providers: [

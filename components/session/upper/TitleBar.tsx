@@ -10,14 +10,15 @@ import SessionDatePicker from './SessionDatePicker'
 interface Props {
   day: Dayjs
   setTargetDate: Dispatch<SetStateAction<string>>
+  disableRouter?: boolean
 }
-export default function TitleBar({ day, setTargetDate }: Props) {
+export default function TitleBar({ day, setTargetDate, disableRouter }: Props) {
   const router = useRouter()
 
   const handleDateChange = (newDay: Dayjs) => {
     const date = newDay.format(DATE_FORMAT)
     setTargetDate(date)
-    router.push(date)
+    !disableRouter && router.push(date)
   }
 
   return (
