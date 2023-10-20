@@ -12,7 +12,11 @@ import dayjs from 'dayjs'
 
 import StyledDivider from 'components/StyledDivider'
 import { DATE_FORMAT, DEFAULT_CLOTHING_OFFSET } from 'lib/frontend/constants'
-import { useBodyweightHistory, useExercises } from 'lib/frontend/restService'
+import {
+  useBodyweightHistory,
+  useExercises,
+  useRecords,
+} from 'lib/frontend/restService'
 import Bodyweight from 'models/Bodyweight'
 import Exercise from 'models/AsyncSelectorOption/Exercise'
 import { useQueryState } from 'next-usequerystate'
@@ -29,11 +33,23 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { ComboBoxField } from 'components/form-fields/ComboBoxField'
+import SelectFieldAutosave from 'components/form-fields/SelectFieldAutosave'
+import SetTypeSelect from 'components/session/records/SetTypeSelect'
+import {
+  ArrayMatchType,
+  ArrayMatchTypeDescription,
+} from 'models/query-filters/MongoQuery'
+import ExerciseSelector from 'components/form-fields/selectors/ExerciseSelector'
+import { RecordQuery } from 'models/query-filters/RecordQuery'
+import { DB_UNITS } from 'models/Set'
+import { DEFAULT_SET_TYPE } from 'models/Record'
 
 interface GraphBodyweight extends Bodyweight {
   epochDate: number
 }
 
+// todo: filter should be passable as url query so you can direct link to the page from a specific record?
 export default function HistoryPage() {
   const { exercises, mutate: mutateExercises } = useExercises()
   const [exercise, setExercise] = useState<Exercise | null>(null)
@@ -42,6 +58,13 @@ export default function HistoryPage() {
   const [includeUnofficial, setIncludeUnofficial] = useState(false)
   const [clothingOffset, setClothingOffset] = useState(DEFAULT_CLOTHING_OFFSET)
   const [showSmoothedBw, setShowSmoothedBw] = useState(false)
+  const [recordQuery, setRecordQuery] = useState<RecordQuery>({})
+  const [setType, setSetType] = useState(DEFAULT_SET_TYPE)
+
+  const { records } = useRecords(recordQuery)
+
+  const updateFilter = (changes: RecordQuery) =>
+    setRecordQuery((prevFilter) => ({ ...prevFilter, ...changes }))
 
   const [urlExercise, setUrlExercise] = useQueryState('exercise')
   const isDesktop = useMediaQuery('(pointer: fine)')
@@ -100,6 +123,19 @@ export default function HistoryPage() {
     clothingOffset,
   ])
 
+  // add epochDate
+  // add representative value...? Like, find highest weight in all sets... or most reps? total reps? largest distance? lowest time? longest time?
+  // representative value super flexible... could make it a select box
+  // hmm... kinda feels like it might be better to just show history cards, not a graph
+  // but the graph seems like it would be nice for visualizing 1RM over time (or 6RM, etc).
+  // Wouldn't the main thing be ensuring you are doing progressive overload tho?
+  // So in that case you'd want to make sure volume is going up. Which includes reps, sets, weight.
+  // But it's not just weights x reps x sets because that only incentivizes high reps.
+
+  // const graphRecordData = useMemo(() => {
+  //   return records.map
+  // })
+
   const convertEpochToDate = (value: number) =>
     dayjs.unix(value).format('YYYY-MM-DD')
 
@@ -127,6 +163,58 @@ export default function HistoryPage() {
   // todo: scroll snap?
   return (
     <Grid container spacing={2}>
+      <Grid xs={12}>
+        <ExerciseSelector
+          exercise={exercise}
+          handleChange={(exercise) => {
+            setExercise(exercise)
+            updateFilter({ exercise: exercise?.name })
+          }}
+          exercises={exercises}
+          mutate={mutateExercises}
+          variant="standard"
+        />
+      </Grid>
+      <Grid xs={12} sm={6}>
+        <ComboBoxField
+          label="Modifiers"
+          emptyPlaceholder="No filter"
+          options={exercise?.modifiers ?? []}
+          initialValue={[]}
+          variant="standard"
+          handleSubmit={(modifier) => updateFilter({ modifier })}
+          helperText=""
+        />
+      </Grid>
+      <Grid xs={12} sm={6}>
+        <SelectFieldAutosave
+          fullWidth
+          label="Modifier Match Type"
+          options={Object.values(ArrayMatchType)}
+          handleSubmit={(modifierMatchType) =>
+            updateFilter({ modifierMatchType })
+          }
+          initialValue={
+            recordQuery.modifierMatchType ?? ArrayMatchType.Equivalent
+          }
+          variant="standard"
+          helperText={ArrayMatchTypeDescription[
+            recordQuery.modifierMatchType ?? 'none'
+          ].replaceAll('values', 'modifiers')}
+        />
+      </Grid>
+      <Grid xs={12}>
+        <SetTypeSelect
+          units={DB_UNITS}
+          setType={setType}
+          handleSubmit={(changes) => {
+            setSetType({ ...setType, ...changes })
+            updateFilter(changes)
+          }}
+          sets={[]}
+          emptyOption="no filter"
+        />
+      </Grid>
       <Grid xs={8} alignItems="center" display="flex">
         <FormGroup row>
           <FormControlLabel
@@ -179,23 +267,6 @@ export default function HistoryPage() {
           }}
         />
       </Grid>
-      {/* todo: thinking exercises will have to be something like locking all but one set fields. And you can set a field as a don't care.
-            So for weight it would be lock reps to 6 or whatever and set everything but weight to don't care. Can overlay on top of bw but would
-            need a second y axis unless both are weight. Maybe would be better to always have two axes? A dedicated bw axis.  */}
-      {/* <Grid xs={12}>
-        <ExerciseSelector
-          {...{
-            exercise,
-            handleChange: (exercise) => {
-              setExercise(exercise)
-              setUrlExercise(exercise?.name ?? null, { scroll: false })
-            },
-            exercises,
-            mutate: mutateExercises,
-          }}
-        />
-      </Grid> */}
-      {/* todo: modifiers, reps, modifier match type? (ArrayMatchType) */}
       {/* todo: add multiple exercises */}
       <Grid xs={12}>
         <StyledDivider />
@@ -247,7 +318,10 @@ export default function HistoryPage() {
                 ) : (
                   <Line name="bodyweight" dataKey="value" type="monotone" />
                 )}
-                {/* todo: possible to show weigh-in type in tooltip? */}
+                {/* need to add record data to the same data set, and I guess also sort by epochDate. And combine with BW so if a record and bodyweight have the same date they'd be the same data point */}
+                {/* {exercise && (
+                  <Line name={exercise.name} dataKey="value" type="monotone" />
+                )} */}
                 <Tooltip
                   trigger={isDesktop ? 'hover' : 'click'}
                   labelFormatter={convertEpochToDate}
@@ -277,7 +351,3 @@ export default function HistoryPage() {
     </Grid>
   )
 }
-
-// todo in graph:
-// brush for panning / zooming
-// date axis
