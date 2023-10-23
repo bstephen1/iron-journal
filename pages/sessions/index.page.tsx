@@ -6,6 +6,8 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 
+const today = dayjs().format(DATE_FORMAT)
+
 export default function Page() {
   const router = useRouter()
   // initial value is undefined while loading
@@ -16,7 +18,6 @@ export default function Page() {
   // render serverside and cause an error since the router doesn't exist yet.
   useEffect(() => {
     if (!sessionRedirect) return
-    const today = dayjs().format(DATE_FORMAT)
     router.push(`sessions/${today}`)
   }, [router, sessionRedirect])
 
