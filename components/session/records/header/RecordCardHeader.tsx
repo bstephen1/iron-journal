@@ -13,6 +13,7 @@ import ManageExerciseButton from './ManageExerciseButton'
 import MoreActionsButton from './MoreActionsButton'
 import RecordNotesButton from './ReccordNotesButton'
 import SwapRecordButton from './SwapRecordButton'
+import SupersetButton from './SupersetButton'
 const actionButtonWidth = 40
 const minTitleWidth = 120
 
@@ -27,7 +28,7 @@ const useMaxVisibleActions = (totalActions: number) => {
     'cardHeaderActions',
     {
       defaultValue: 0,
-    }
+    },
   )
 
   // Width inits as undefined on mount since the ref needs a frame to setup.
@@ -42,7 +43,7 @@ const useMaxVisibleActions = (totalActions: number) => {
   // limits actions to be no less than 0 and no more than total actions
   const maxBoundedActions = Math.max(
     Math.min(maxVisibleActions, totalActions),
-    0
+    0,
   )
   // don't hide an action if it would be the only hidden action
   const visibleActions =
@@ -61,7 +62,11 @@ const useMaxVisibleActions = (totalActions: number) => {
   }
 }
 
-interface Props extends Pick<Record, 'notes' | 'sets' | '_id' | 'exercise'> {
+interface Props
+  extends Pick<
+    Record,
+    'notes' | 'sets' | '_id' | 'exercise' | 'supersetGroup'
+  > {
   swiperIndex: number
   mutateExerciseFields: UpdateFields<Exercise>
   mutateRecordFields: UpdateFields<Record>
@@ -78,6 +83,7 @@ export default function RecordCardHeader({
   exercise,
   displayFields,
   date,
+  supersetGroup,
 }: Props) {
   const actionButtons = [
     <RecordNotesButton
@@ -91,6 +97,11 @@ export default function RecordCardHeader({
       notes={exercise?.notes}
       modifiers={exercise?.modifiers}
       mutateExerciseFields={mutateExerciseFields}
+    />,
+    <SupersetButton
+      key="superset"
+      disabled={!exercise}
+      {...{ supersetGroup, mutateRecordFields, date }}
     />,
     <ChangeUnitsButton
       key="units"

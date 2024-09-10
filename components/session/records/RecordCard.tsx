@@ -110,6 +110,7 @@ function LoadedRecordCard({
     category,
     setType,
     date,
+    supersetGroup,
   } = record
   const displayFields = useDisplayFields(exercise)
   const extraWeight = useExtraWeight(record)
@@ -139,10 +140,10 @@ function LoadedRecordCard({
           updateExerciseFields(cur.exercise, { ...changes })
           return { ...cur, exercise: newExercise }
         },
-        { revalidate: false }
+        { revalidate: false },
       )
     },
-    [mutateRecord, setMostRecentlyUpdatedExercise]
+    [mutateRecord, setMostRecentlyUpdatedExercise],
   )
 
   const mutateRecordFields: UpdateFields<Record> = useCallback(
@@ -152,7 +153,7 @@ function LoadedRecordCard({
         revalidate: false,
       })
     },
-    [mutateRecord, _id]
+    [mutateRecord, _id],
   )
 
   // todo: add Category to Record so it persists (if exercise is filtered; mainly for programming)
@@ -170,6 +171,7 @@ function LoadedRecordCard({
             notes,
             displayFields,
             date,
+            supersetGroup,
           }}
         />
         <StyledDivider elevation={0} sx={{ height: 2, my: 0 }} />
